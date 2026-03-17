@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EE98 — Race to the Board · Rules</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --gold:   #F5C842;
+  --green:  #2ECC71;
+  --red:    #E74C3C;
+  --blue:   #5BA4F5;
+  --dark:   #090909;
+  --card:   #131313;
+  --card2:  #1a1a1a;
+  --border: #242424;
+  --text:   #EFEFEF;
+  --muted:  #666;
+}
+
+body {
+  background: var(--dark);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  padding: 3rem 1.5rem 5rem;
+  background-image:
+    radial-gradient(ellipse at 15% 10%, rgba(245,200,66,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 90%, rgba(91,164,245,0.04) 0%, transparent 50%);
+}
+
+.page { max-width: 720px; margin: 0 auto; }
+
+/* ── HERO ── */
+.hero { text-align: center; margin-bottom: 3.5rem; }
+
+.ee98-tag {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.25);
+  color: var(--gold); font-family: 'DM Mono', monospace;
+  font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase;
+  padding: 0.4rem 1.1rem; border-radius: 100px; margin-bottom: 1.5rem;
+}
+
+.flag { font-size: 1rem; }
+
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2.8rem, 8vw, 4.5rem);
+  font-weight: 900; line-height: 0.95;
+  color: #fff; margin-bottom: 0.8rem;
+}
+
+h1 .accent { color: var(--gold); display: block; }
+
+.hero-sub {
+  color: var(--muted); font-size: 1rem; line-height: 1.6;
+  max-width: 480px; margin: 0 auto 2rem;
+}
+
+.optional-badge {
+  display: inline-block;
+  background: rgba(46,204,113,0.1); border: 1px solid rgba(46,204,113,0.25);
+  color: var(--green); font-size: 0.8rem; font-weight: 500;
+  padding: 0.4rem 1.2rem; border-radius: 100px;
+}
+
+/* ── SECTION TITLES ── */
+.section-title {
+  font-family: 'Syne', sans-serif; font-size: 0.7rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em;
+  color: var(--muted); margin-bottom: 1rem; margin-top: 2.5rem;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── RULE CARDS ── */
+.rules-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+
+.rule-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.1rem 1.3rem;
+  display: flex; align-items: flex-start; gap: 1rem;
+}
+
+.rule-icon {
+  font-size: 1.4rem; line-height: 1;
+  flex-shrink: 0; margin-top: 0.1rem;
+}
+
+.rule-body { flex: 1; }
+
+.rule-title {
+  font-family: 'Syne', sans-serif; font-size: 0.9rem;
+  font-weight: 700; color: #fff; margin-bottom: 0.25rem;
+}
+
+.rule-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+.rule-desc strong { color: var(--text); }
+
+.rule-card.highlight { border-color: rgba(245,200,66,0.3); background: rgba(245,200,66,0.04); }
+.rule-card.highlight .rule-title { color: var(--gold); }
+
+/* ── POINTS TABLE ── */
+.points-table {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; overflow: hidden;
+}
+
+.pt-row {
+  display: flex; align-items: center;
+  padding: 1rem 1.3rem; gap: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.pt-row:last-child { border-bottom: none; }
+.pt-row.winner-row { background: rgba(245,200,66,0.05); }
+
+.pt-medal { font-size: 1.5rem; width: 32px; text-align: center; flex-shrink: 0; }
+.pt-desc  { flex: 1; }
+.pt-desc  .who  { font-size: 0.9rem; font-weight: 500; color: #fff; }
+.pt-desc  .what { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+.pt-pts {
+  font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800;
+}
+.winner-row .pt-pts { color: var(--gold); }
+.pt-pts.regular     { color: var(--text); }
+
+/* ── VOTING / ELIGIBILITY ── */
+.info-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;
+}
+
+@media (max-width: 500px) { .info-grid { grid-template-columns: 1fr; } }
+
+.info-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.1rem 1.3rem;
+}
+
+.info-card .ic-title {
+  font-family: 'Syne', sans-serif; font-size: 0.82rem;
+  font-weight: 700; color: var(--gold); margin-bottom: 0.6rem;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+
+.info-card ul {
+  list-style: none; display: flex; flex-direction: column; gap: 0.45rem;
+}
+
+.info-card li {
+  font-size: 0.82rem; color: var(--muted); line-height: 1.5;
+  padding-left: 1.2rem; position: relative;
+}
+
+.info-card li::before {
+  content: '→'; position: absolute; left: 0;
+  color: var(--border); font-size: 0.75rem;
+}
+
+/* ── RACING NAME BOX ── */
+.name-box {
+  background: var(--card); border: 1px solid rgba(91,164,245,0.25);
+  border-radius: 14px; padding: 1.3rem;
+}
+
+.name-box .nb-title {
+  font-family: 'Syne', sans-serif; font-size: 0.9rem;
+  font-weight: 700; color: var(--blue); margin-bottom: 0.6rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+
+.name-box p { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 0.5rem; }
+.name-box p:last-child { margin-bottom: 0; }
+.name-box strong { color: var(--text); }
+
+.examples {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem;
+}
+
+.ex-pill {
+  background: var(--card2); border: 1px solid var(--border);
+  color: var(--muted); font-size: 0.75rem;
+  padding: 0.25rem 0.7rem; border-radius: 100px;
+}
+
+/* ── AI WARNING ── */
+.warning-box {
+  background: rgba(231,76,60,0.06);
+  border: 1px solid rgba(231,76,60,0.35);
+  border-radius: 14px; padding: 1.4rem 1.5rem;
+}
+
+.warning-box .w-header {
+  display: flex; align-items: center; gap: 0.7rem;
+  margin-bottom: 0.8rem;
+}
+
+.warning-box .w-icon { font-size: 1.5rem; }
+
+.warning-box .w-title {
+  font-family: 'Syne', sans-serif; font-size: 1rem;
+  font-weight: 800; color: var(--red);
+}
+
+.warning-box p {
+  font-size: 0.85rem; color: #cc6b6b; line-height: 1.7;
+  margin-bottom: 0.5rem;
+}
+.warning-box p:last-child { margin-bottom: 0; }
+.warning-box strong { color: var(--red); }
+
+/* ── CTA ── */
+.cta {
+  text-align: center; margin-top: 3rem;
+}
+
+.cta-btn {
+  display: inline-block;
+  background: var(--gold); color: #0A0A0A;
+  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800;
+  padding: 1rem 3rem; border-radius: 12px;
+  text-decoration: none; letter-spacing: 0.03em;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.cta-btn:hover  { opacity: 0.88; }
+.cta-btn:active { transform: scale(0.97); }
+
+.cta-note { font-size: 0.78rem; color: var(--muted); margin-top: 0.8rem; }
+
+.ex-pill.clickable {
+  cursor: pointer; transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.ex-pill.clickable:hover {
+  background: rgba(245,200,66,0.12); border-color: rgba(245,200,66,0.35); color: var(--gold);
+}
+.ex-pill.clickable.selected {
+  background: rgba(245,200,66,0.15); border-color: var(--gold); color: var(--gold);
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="ee98-tag"><span class="flag">🏁</span> EE98</div>
+    <h1>Race to<span class="accent">the Board</span></h1>
+    <p class="hero-sub">A live in-class challenge. Solve fast, help your classmates, earn bonus points.</p>
+    <span class="optional-badge">✅ Optional — bonus points only</span>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section-title">How it works</div>
+  <div class="rules-grid">
+
+    <div class="rule-card">
+      <div class="rule-icon">⏱️</div>
+      <div class="rule-body">
+        <div class="rule-title">Time window</div>
+        <div class="rule-desc">Professor Rejeb opens a MoM question with a set time limit (e.g. 10 minutes). Solve it, then come back here and submit.</div>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-icon">💡</div>
+      <div class="rule-body">
+        <div class="rule-title">Try on your own first</div>
+        <div class="rule-desc">There may be no winner yet — or time may run out before you can use their help. <strong>Don't wait.</strong> Your parameters are unique to you anyway.</div>
+      </div>
+    </div>
+
+    <div class="rule-card highlight">
+      <div class="rule-icon">🥇</div>
+      <div class="rule-body">
+        <div class="rule-title">First to finish = Race Winner</div>
+        <div class="rule-desc">The first student to submit goes to the board and walks the class through their solution. The winner may also post their MATLAB code live on screen to help others finish.</div>
+      </div>
+    </div>
+
+    <div class="rule-card">
+      <div class="rule-icon">🗳️</div>
+      <div class="rule-body">
+        <div class="rule-title">Vote after the race</div>
+        <div class="rule-desc">Once you submit your MoM answer, you have <strong>5 minutes</strong> to vote on the winner's solution helpfulness. All participants vote — results are public.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- POINTS -->
+  <div class="section-title">Points</div>
+  <div class="points-table">
+    <div class="pt-row winner-row">
+      <div class="pt-medal">🏆</div>
+      <div class="pt-desc">
+        <div class="who">Race Winner — 1st to finish</div>
+        <div class="what">Presents solution at the board for the class</div>
+      </div>
+      <div class="pt-pts">10 pts</div>
+    </div>
+    <div class="pt-row">
+      <div class="pt-medal">✅</div>
+      <div class="pt-desc">
+        <div class="who">Everyone else who submits in time</div>
+        <div class="what">Finish within the MoM time window</div>
+      </div>
+      <div class="pt-pts regular">5 pts</div>
+    </div>
+    <div class="pt-row">
+      <div class="pt-medal">⏰</div>
+      <div class="pt-desc">
+        <div class="who">Did not submit in time</div>
+        <div class="what">No penalty — this activity is optional</div>
+      </div>
+      <div class="pt-pts regular" style="color:var(--muted);">0 pts</div>
+    </div>
+  </div>
+
+  <!-- RACING NAME -->
+  <div class="section-title">Your racing name</div>
+  <div class="name-box">
+    <div class="nb-title">🏷️ Choose your racing identity</div>
+    <p>Pick a fun racing name — this is how you appear on the leaderboard all semester. You keep it across all races.</p>
+    <p><strong>Once you win a race, your racing name is locked.</strong> You may only change it with Professor Rejeb's approval.</p>
+    <p>Professor Rejeb keeps a private roster matching racing names to real students.</p>
+    <p style="font-size:0.8rem; color:var(--muted); margin-top:0.5rem;">Need inspiration? Click a suggestion — or type your own on the next page.</p>
+    <div class="examples" id="name-suggestions">
+      <span class="ex-pill clickable" onclick="pickName(this,'Lion')">🦁 Lion</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Tiger')">🐯 Tiger</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Einstein')">⚡ Einstein</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Superman')">🦸 Superman</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Rocket')">🚀 Rocket</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Blaze')">🔥 Blaze</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Neuron')">🧠 Neuron</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Ohm')">⚙️ Ohm</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Voltage')">⚡ Voltage</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Faraday')">🔬 Faraday</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Maxwell')">📡 Maxwell</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Joule')">💡 Joule</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Ampere')">🌊 Ampere</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Tesla')">⚡ Tesla</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Flux')">🌀 Flux</span>
+      <span class="ex-pill clickable" onclick="pickName(this,'Bohr')">⚛️ Bohr</span>
+    </div>
+    <div id="picked-msg" style="display:none; margin-top:0.8rem; font-size:0.82rem; color:var(--green);">
+      ✓ Pre-filled: <strong id="picked-name"></strong> — you can still change it on the next page.
+    </div>
+  </div>
+
+  <!-- VOTING & ELIGIBILITY -->
+  <div class="section-title">Voting &amp; Eligibility</div>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="ic-title">🗳️ Voting rules</div>
+      <ul>
+        <li>Voting opens the moment you submit your MoM answer</li>
+        <li>You have exactly <strong style="color:var(--text)">5 minutes</strong> to cast your vote</li>
+        <li>Only participants who submitted can vote</li>
+        <li>Results are shown publicly on the leaderboard</li>
+      </ul>
+    </div>
+    <div class="info-card">
+      <div class="ic-title">🏅 Who can run next race?</div>
+      <ul>
+        <li>❌ Two consecutive wins → must sit out once</li>
+        <li>❌ Approval rating &lt; 60% → must sit out next race</li>
+        <li>✅ All others are eligible to run</li>
+        <li>Eligibility is posted before each race opens</li>
+        <li>Professor Rejeb has final say on all overrides</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- DISCLAIMER -->
+  <div class="section-title">Winner's solution disclaimer</div>
+  <div class="rule-card" style="border-color: rgba(245,200,66,0.2);">
+    <div class="rule-icon">⚠️</div>
+    <div class="rule-body">
+      <div class="rule-title" style="color:var(--gold);">Not reviewed by Professor Rejeb</div>
+      <div class="rule-desc">The winner's solution is shared for learning purposes only. It has <strong>not been reviewed or verified</strong> by Professor Rejeb. Grading is done solely by MoM — and your parameter values are <strong>randomized and unique to you</strong>. Do not copy values — use it as a method guide only.</div>
+    </div>
+  </div>
+
+  <!-- AI WARNING -->
+  <div class="section-title">Academic integrity</div>
+  <div class="warning-box">
+    <div class="w-header">
+      <div class="w-icon">⚠️</div>
+      <div class="w-title">AI Tools &amp; Cheating — Fair Play</div>
+    </div>
+    <p>Using AI tools, copying another student's solution, or submitting without genuinely working through the problem defeats the purpose of this activity and is unfair to your classmates.</p>
+    <p><strong>Consequence:</strong> forfeiture of bonus points for that race and potential loss of eligibility for future races.</p>
+    <p>Remember — <strong>MoM grades your answer with your own unique randomized values.</strong> The winner's MATLAB code will not give you the right answers — your parameters are different. Trying on your own is the only way to actually earn the points.</p>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta">
+    <a href="winner.html" class="cta-btn">🏁 &nbsp; I'm ready — enter the race</a>
+    <div class="cta-note">Make sure you have your MoM question open in another tab before clicking.</div>
+  </div>
+
+</div>
+<script>
+function pickName(el, name) {
+  document.querySelectorAll('.ex-pill.clickable').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('picked-name').textContent = name;
+  document.getElementById('picked-msg').style.display = 'block';
+  sessionStorage.setItem('ee98_racename', name);
+}
+</script>
+</body>
+</html>

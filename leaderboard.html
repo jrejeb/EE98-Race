@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EE98 — Race to the Board · Live</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #F5C842; --silver: #C0C0C0; --bronze: #CD7F32;
+  --fourth: #7EB8F7; --fifth: #A78BFA; --green: #2ECC71;
+  --red: #E74C3C; --blue: #5BA4F5;
+  --dark: #070707; --card: #111; --border: #1d1d1d;
+  --text: #F0F0F0; --muted: #555;
+}
+body {
+  background: var(--dark); color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh; padding: 1.8rem 2.2rem;
+  background-image:
+    radial-gradient(ellipse at 5%  0%,   rgba(245,200,66,0.07) 0%, transparent 40%),
+    radial-gradient(ellipse at 95% 100%, rgba(91,164,245,0.04) 0%, transparent 40%);
+}
+header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; margin-bottom: 1.5rem; gap: 1rem;
+}
+.header-left h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 900; color: #fff; line-height: 1;
+}
+.header-left h1 span { color: var(--gold); }
+.header-left .sub {
+  display: flex; align-items: center; gap: 0.8rem; margin-top: 0.5rem; flex-wrap: wrap;
+}
+.live-tag {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.2);
+  color: var(--green); font-family: 'DM Mono', monospace;
+  font-size: 0.7rem; letter-spacing: 0.08em;
+  padding: 0.25rem 0.75rem; border-radius: 100px;
+}
+.pulse { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 1.4s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(0.65)} }
+.sess-tag { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+.matlab-pill {
+  font-size: 0.68rem; font-weight: 500; padding: 0.18rem 0.55rem; border-radius: 100px;
+}
+.matlab-pill.req { background: rgba(231,76,60,0.12); color: var(--red); border: 1px solid rgba(231,76,60,0.25); }
+.matlab-pill.opt { background: rgba(85,85,85,0.12); color: var(--muted); border: 1px solid var(--border); }
+.header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; }
+.count-big { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--gold); line-height: 1; }
+.count-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; text-align: right; }
+
+/* WINNER BANNER */
+#winner-banner {
+  display: none;
+  background: linear-gradient(135deg, rgba(245,200,66,0.09) 0%, transparent 100%);
+  border: 1px solid rgba(245,200,66,0.38); border-radius: 16px;
+  padding: 1.2rem 1.5rem; margin-bottom: 1.4rem;
+  animation: winIn 0.55s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes winIn { from { transform: scale(0.92) translateY(-8px); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.wb-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.85rem; }
+.wb-trophy { font-size: 2.4rem; }
+.wb-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--gold); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.18rem; }
+.wb-name  { font-family: 'Syne', sans-serif; font-size: 1.75rem; font-weight: 900; color: #fff; line-height: 1; }
+.wb-time  { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); margin-top: 0.2rem; }
+.wb-inst  {
+  background: rgba(245,200,66,0.07); border: 1px solid rgba(245,200,66,0.16);
+  border-radius: 10px; padding: 0.65rem 0.95rem;
+  color: var(--gold); font-size: 0.8rem; line-height: 1.5;
+}
+
+/* MAIN GRID */
+#mg { display: grid; grid-template-columns: 1fr; gap: 1.3rem; }
+#mg.has-sol { grid-template-columns: 1fr 1fr; }
+
+/* SOLUTION PANEL */
+#sol-panel {
+  display: none; background: var(--card);
+  border: 1px solid rgba(245,200,66,0.2); border-radius: 16px;
+  padding: 1.2rem; animation: fadeUp 0.5s ease;
+}
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+.sp-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; padding-bottom: 0.65rem; border-bottom: 1px solid var(--border); }
+.sp-title { font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700; color: var(--gold); }
+.sp-by { font-family: 'DM Mono', monospace; font-size: 0.68rem; color: var(--muted); margin-left: auto; }
+.sp-code {
+  font-family: 'DM Mono', monospace; font-size: 0.78rem; color: #b8e0b8;
+  line-height: 1.8; white-space: pre-wrap; word-break: break-word;
+  background: rgba(0,0,0,0.5); border-radius: 8px;
+  padding: 0.85rem 1rem; max-height: 42vh; overflow-y: auto;
+}
+.sp-disc {
+  margin-top: 0.75rem; padding: 0.55rem 0.85rem;
+  background: rgba(231,76,60,0.06); border: 1px solid rgba(231,76,60,0.18);
+  border-radius: 8px; font-size: 0.7rem; color: #cc6b6b; line-height: 1.5;
+}
+.sp-disc strong { color: var(--red); }
+
+/* LIST */
+.list-hdr {
+  display: grid; grid-template-columns: 40px 1fr 110px 62px 55px;
+  gap: 0.4rem; padding: 0 0.65rem 0.45rem;
+  font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--muted); border-bottom: 1px solid var(--border); margin-bottom: 0.4rem;
+}
+#entries-list { display: flex; flex-direction: column; gap: 0.28rem; max-height: 52vh; overflow-y: auto; }
+.entry {
+  display: grid; grid-template-columns: 40px 1fr 110px 62px 55px;
+  gap: 0.4rem; align-items: center;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.55rem 0.65rem;
+  animation: slideIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideIn { from { opacity:0; transform:translateY(-7px) scale(0.97); } to { opacity:1; transform:none; } }
+.entry.r1 { border-color: rgba(245,200,66,0.36); background: rgba(245,200,66,0.04); }
+.entry.r2 { border-color: rgba(192,192,192,0.2); }
+.entry.r3 { border-color: rgba(205,127,50,0.2); }
+.entry.r4 { border-color: rgba(126,184,247,0.17); }
+.entry.r5 { border-color: rgba(167,139,250,0.17); }
+.rnum { font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 800; text-align: center; }
+.entry.r1 .rnum { color: var(--gold); }
+.entry.r2 .rnum { color: var(--silver); }
+.entry.r3 .rnum { color: var(--bronze); }
+.entry.r4 .rnum { color: var(--fourth); }
+.entry.r5 .rnum { color: var(--fifth); }
+.entry:not(.r1):not(.r2):not(.r3):not(.r4):not(.r5) .rnum { color: var(--muted); }
+.ename { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.etime { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); }
+.pill { display: inline-block; font-size: 0.58rem; font-weight: 500; padding: 0.13rem 0.48rem; border-radius: 100px; }
+.entry.r1 .pill { background: rgba(245,200,66,0.1); color: var(--gold); border: 1px solid rgba(245,200,66,0.22); }
+.entry:not(.r1) .pill { background: rgba(46,204,113,0.07); color: var(--green); border: 1px solid rgba(46,204,113,0.18); }
+.vtally { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--muted); }
+.empty { text-align: center; padding: 2.5rem; color: var(--muted); }
+.empty .ico { font-size: 2rem; display: block; margin-bottom: 0.5rem; opacity: 0.22; }
+
+/* VOTE RESULTS */
+#vote-results {
+  display: none; margin-top: 0.9rem;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 13px; padding: 1rem 1.2rem;
+}
+.vr-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; color: var(--gold); margin-bottom: 0.75rem; }
+.vb-wrap { margin-bottom: 0.45rem; }
+.vb-label { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); margin-bottom: 0.28rem; }
+.vb-track { height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.vb-fill  { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+.vb-fill.y { background: var(--green); }
+.vb-fill.n { background: var(--red); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>🏁 EE98 — Race to the <span>Board</span></h1>
+    <div class="sub">
+      <div class="live-tag"><div class="pulse"></div>LIVE</div>
+      <span class="sess-tag" id="sess-lbl">session: —</span>
+      <span class="matlab-pill opt" id="matlab-pill">MATLAB optional</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="count-big" id="total-count">0</div>
+    <div class="count-lbl">submitted</div>
+  </div>
+</header>
+
+<div id="winner-banner">
+  <div class="wb-row">
+    <div class="wb-trophy">🏆</div>
+    <div>
+      <div class="wb-label">🥇 Race Winner</div>
+      <div class="wb-name" id="wb-name">—</div>
+      <div class="wb-time" id="wb-time">—</div>
+    </div>
+  </div>
+  <div class="wb-inst">
+    📣 <strong id="wb-name2">—</strong> — please come to the board and walk the class through your solution. You earn <strong>10 pts (2×)</strong>!
+  </div>
+</div>
+
+<div id="mg">
+  <div>
+    <div class="list-hdr">
+      <div>Rank</div><div>Racing name</div><div>Time</div><div>Points</div><div>👍/👎</div>
+    </div>
+    <div id="entries-list">
+      <div class="empty"><span class="ico">🏁</span>Waiting for submissions…</div>
+    </div>
+    <div id="vote-results">
+      <div class="vr-title">🗳️ Helpfulness vote — live results</div>
+      <div class="vb-wrap">
+        <div class="vb-label"><span>👍 Helpful</span><span id="yes-pct">0%</span></div>
+        <div class="vb-track"><div class="vb-fill y" id="yes-bar" style="width:0%"></div></div>
+      </div>
+      <div class="vb-wrap">
+        <div class="vb-label"><span>👎 Not helpful</span><span id="no-pct">0%</span></div>
+        <div class="vb-track"><div class="vb-fill n" id="no-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sol-panel">
+    <div class="sp-head">
+      <span>💻</span>
+      <span class="sp-title">Winner's MATLAB Solution</span>
+      <span class="sp-by" id="sp-by">—</span>
+    </div>
+    <div class="sp-code" id="sp-code"></div>
+    <div class="sp-disc">
+      <strong>⚠️ Not reviewed by Professor Rejeb.</strong> This solution has not been verified. Your MoM values are <strong>randomized and unique to you</strong> — use this as a method guide only, not a source of values to copy.
+    </div>
+  </div>
+</div>
+
+<script>
+function playFanfare() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const seq = [
+      {f:440, t:0,    d:0.12, v:0.20},
+      {f:554, t:0.10, d:0.12, v:0.20},
+      {f:659, t:0.20, d:0.12, v:0.20},
+      {f:880, t:0.30, d:0.25, v:0.25},
+      {f:1109,t:0.30, d:0.25, v:0.18},
+      {f:1319,t:0.30, d:0.25, v:0.16},
+      {f:880, t:0.58, d:0.08, v:0.20},
+      {f:1047,t:0.66, d:0.08, v:0.20},
+      {f:1319,t:0.74, d:0.55, v:0.28},
+      {f:1047,t:0.74, d:0.55, v:0.18},
+      {f:659, t:0.74, d:0.55, v:0.14},
+    ];
+    seq.forEach(({f,t,d,v}) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(v, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + d);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + d + 0.05);
+    });
+  } catch(e) {}
+}
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, query, orderByChild }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ── PASTE YOUR FIREBASE CONFIG HERE ────────────────────────────
+  const firebaseConfig = {
+    apiKey:            "AIzaSyBXMat27V4YU7U79FAjekIRF49pK_stn18",
+    authDomain:        "ee98-race.firebaseapp.com",
+    databaseURL:       "https://ee98-race-default-rtdb.firebaseio.com",
+    projectId:         "ee98-race",
+    storageBucket:     "ee98-race.firebasestorage.app",
+    messagingSenderId: "1082290560398",
+    appId:             "1:1082290560398:web:d1c3671c2122322de5d8df"
+  };
+  // ───────────────────────────────────────────────────────────────
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+  const params  = new URLSearchParams(window.location.search);
+  const session = params.get('session') || 'default';
+  document.getElementById('sess-lbl').textContent = 'session: ' + session;
+
+  const subPath  = `sessions/${session}/submissions`;
+  const solPath  = `sessions/${session}/solution`;
+  const votePath = `sessions/${session}/votes`;
+  const setPath  = `sessions/${session}/settings`;
+
+  const RC = ['r1','r2','r3','r4','r5'];
+  let winnerSeen = false, winnerName = '—';
+
+  function fmt(ts) {
+    return new Date(ts).toLocaleTimeString('en-US',
+      {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+  }
+
+  onValue(ref(db, setPath), snap => {
+    const req = snap.exists() && snap.val().matlabRequired;
+    const p   = document.getElementById('matlab-pill');
+    p.textContent = req ? 'MATLAB required' : 'MATLAB optional';
+    p.className   = 'matlab-pill ' + (req ? 'req' : 'opt');
+  });
+
+  onValue(query(ref(db, subPath), orderByChild('timestamp')), snap => {
+    const E = [];
+    if (snap.exists()) snap.forEach(c => E.push(c.val()));
+    E.sort((a,b) => a.timestamp - b.timestamp);
+    document.getElementById('total-count').textContent = E.length;
+
+    if (E.length > 0) {
+      const w = E[0]; winnerName = w.name;
+      document.getElementById('winner-banner').style.display = 'block';
+      document.getElementById('wb-name').textContent  = w.name;
+      document.getElementById('wb-name2').textContent = w.name;
+      document.getElementById('wb-time').textContent  = fmt(w.timestamp);
+      if (!winnerSeen) { winnerSeen = true; playFanfare(); }
+    } else {
+      document.getElementById('winner-banner').style.display = 'none';
+      winnerSeen = false;
+    }
+
+    const list = document.getElementById('entries-list');
+    if (E.length === 0) {
+      list.innerHTML = '<div class="empty"><span class="ico">🏁</span>Waiting for submissions…</div>';
+      return;
+    }
+    list.innerHTML = E.map((e,i) => `
+      <div class="entry ${RC[i]||''}">
+        <div class="rnum">#${i+1}</div>
+        <div class="ename">${e.name}</div>
+        <div class="etime">${fmt(e.timestamp)}</div>
+        <div><span class="pill">${i===0?'10 pts ★':'5 pts'}</span></div>
+        <div class="vtally" id="vt${i}">—</div>
+      </div>`).join('');
+  });
+
+  onValue(ref(db, solPath), snap => {
+    const p = document.getElementById('sol-panel');
+    const g = document.getElementById('mg');
+    if (!snap.exists()) { p.style.display='none'; g.classList.remove('has-sol'); return; }
+    const {code, postedBy} = snap.val();
+    p.style.display='block'; g.classList.add('has-sol');
+    document.getElementById('sp-by').textContent  = 'posted by ' + (postedBy||winnerName);
+    document.getElementById('sp-code').textContent = code;
+  });
+
+  onValue(ref(db, votePath), snap => {
+    let yes=0, no=0;
+    if (snap.exists()) snap.forEach(c => c.val().vote==='yes' ? yes++ : no++);
+    const total = yes+no;
+    if (!total) return;
+    document.getElementById('vote-results').style.display='block';
+    const yp = Math.round(yes/total*100), np = 100-yp;
+    document.getElementById('yes-pct').textContent = yp+'%';
+    document.getElementById('no-pct').textContent  = np+'%';
+    document.getElementById('yes-bar').style.width = yp+'%';
+    document.getElementById('no-bar').style.width  = np+'%';
+  });
+</script>
+</body>
+</html>

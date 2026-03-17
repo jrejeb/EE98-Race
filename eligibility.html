@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EE98 — Instructor Panel</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #F5C842; --green: #2ECC71; --red: #E74C3C;
+  --blue: #5BA4F5; --orange: #F39C12;
+  --dark: #090909; --card: #131313; --card2: #1a1a1a;
+  --border: #222; --text: #EFEFEF; --muted: #666;
+}
+body {
+  background: var(--dark); color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh; padding: 2rem 2.5rem;
+}
+.page { max-width: 900px; margin: 0 auto; }
+
+/* HEADER */
+.pg-header { margin-bottom: 2rem; }
+.pg-header h1 { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 900; color: #fff; }
+.pg-header h1 span { color: var(--gold); }
+.pg-header p { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+
+/* SECTION */
+.section { margin-bottom: 2rem; }
+.sec-title {
+  font-family: 'Syne', sans-serif; font-size: 0.7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted);
+  margin-bottom: 0.9rem; display: flex; align-items: center; gap: 0.6rem;
+}
+.sec-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+/* SESSION CONTROLS */
+.ctrl-row { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: flex-end; }
+.ctrl-group { display: flex; flex-direction: column; gap: 0.35rem; }
+.ctrl-group label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+input[type="text"] {
+  background: #0A0A0A; border: 1px solid var(--border);
+  border-radius: 9px; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 0.88rem;
+  padding: 0.65rem 0.9rem; outline: none; transition: border-color 0.2s; width: 220px;
+}
+input[type="text"]:focus { border-color: var(--gold); }
+.btn {
+  font-family: 'Syne', sans-serif; font-size: 0.82rem; font-weight: 700;
+  border: none; border-radius: 9px; padding: 0.7rem 1.3rem;
+  cursor: pointer; transition: opacity 0.2s, transform 0.1s; white-space: nowrap;
+}
+.btn-gold   { background: var(--gold);  color: #0A0A0A; }
+.btn-red    { background: rgba(231,76,60,0.15); color: var(--red); border: 1px solid rgba(231,76,60,0.3); }
+.btn-ghost  { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.btn:hover  { opacity: 0.85; }
+.btn:active { transform: scale(0.97); }
+
+/* TOGGLE ROW */
+.toggle-row {
+  display: flex; align-items: center; gap: 1rem;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1rem 1.3rem;
+}
+.toggle-row .tr-label { flex: 1; }
+.toggle-row .tr-label .title { font-size: 0.9rem; font-weight: 500; color: var(--text); }
+.toggle-row .tr-label .desc  { font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem; }
+.toggle-track {
+  position: relative; width: 44px; height: 24px;
+  background: var(--border); border-radius: 12px;
+  transition: background 0.25s; cursor: pointer; flex-shrink: 0;
+}
+.toggle-track.on { background: var(--gold); }
+.toggle-thumb {
+  position: absolute; top: 3px; left: 3px;
+  width: 18px; height: 18px; background: #fff; border-radius: 50%;
+  transition: transform 0.25s; pointer-events: none;
+}
+.toggle-track.on .toggle-thumb { transform: translateX(20px); }
+
+/* ELIGIBILITY TABLE */
+.elig-table { display: flex; flex-direction: column; gap: 0.45rem; }
+.elig-row {
+  display: grid; grid-template-columns: 1fr 90px 90px 80px 120px 100px;
+  gap: 0.6rem; align-items: center;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 11px; padding: 0.75rem 1rem;
+}
+.elig-row.hdr {
+  background: transparent; border-color: transparent;
+  padding-bottom: 0.3rem;
+}
+.elig-row.hdr > div {
+  font-size: 0.65rem; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--muted);
+}
+.racing-name { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; color: #fff; }
+.stat-val { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--muted); }
+.consec-val { font-family: 'DM Mono', monospace; font-size: 0.8rem; }
+.approval-val { font-family: 'DM Mono', monospace; font-size: 0.8rem; }
+.approval-val.low { color: var(--red); }
+.approval-val.ok  { color: var(--green); }
+.rec-badge {
+  display: inline-block; font-size: 0.65rem; font-weight: 600;
+  padding: 0.2rem 0.6rem; border-radius: 100px;
+}
+.rec-badge.eligible   { background: rgba(46,204,113,0.1); color: var(--green); border: 1px solid rgba(46,204,113,0.25); }
+.rec-badge.ineligible { background: rgba(231,76,60,0.1);  color: var(--red);   border: 1px solid rgba(231,76,60,0.25); }
+.rec-badge.override   { background: rgba(243,156,18,0.12); color: var(--orange); border: 1px solid rgba(243,156,18,0.3); }
+
+.override-btn {
+  font-size: 0.7rem; font-weight: 500; padding: 0.25rem 0.65rem;
+  border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+}
+.override-btn:hover { border-color: var(--orange); color: var(--orange); }
+.override-btn.active { background: rgba(243,156,18,0.1); border-color: var(--orange); color: var(--orange); }
+
+/* STATS GRID */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8rem; }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 1rem 1.1rem;
+}
+.stat-card .sv { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 900; color: var(--gold); }
+.stat-card .sl { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.2rem; }
+
+/* RESET */
+.danger-zone {
+  background: rgba(231,76,60,0.04); border: 1px solid rgba(231,76,60,0.18);
+  border-radius: 12px; padding: 1rem 1.3rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+}
+.danger-zone p { font-size: 0.82rem; color: var(--muted); }
+.danger-zone strong { color: var(--red); }
+
+.toast {
+  position: fixed; bottom: 1.5rem; right: 1.5rem;
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.7rem 1.2rem;
+  font-size: 0.82rem; color: var(--text);
+  opacity: 0; transform: translateY(8px);
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="pg-header">
+    <h1>EE98 — <span>Instructor Panel</span></h1>
+    <p>Manage sessions, eligibility, MATLAB requirement, and view race history.</p>
+  </div>
+
+  <!-- SESSION CONTROLS -->
+  <div class="section">
+    <div class="sec-title">Session</div>
+    <div class="ctrl-row">
+      <div class="ctrl-group">
+        <label>Session name</label>
+        <input type="text" id="session-input" placeholder="e.g. w8-instamp" value="default">
+      </div>
+      <button class="btn btn-gold" onclick="loadSession()">Load session</button>
+      <button class="btn btn-ghost" onclick="copyLinks()">📋 Copy student links</button>
+    </div>
+    <p style="font-size:0.75rem; color:var(--muted); margin-top:0.7rem;" id="link-display"></p>
+  </div>
+
+  <!-- MATLAB TOGGLE -->
+  <div class="section">
+    <div class="sec-title">Race settings</div>
+    <div class="toggle-row">
+      <div class="tr-label">
+        <div class="title">MATLAB solution required</div>
+        <div class="desc">When ON, students must paste their MATLAB code to submit. Visible on the leaderboard and winner.html.</div>
+      </div>
+      <div class="toggle-track" id="matlab-toggle" onclick="toggleMatlab()">
+        <div class="toggle-thumb"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="section">
+    <div class="sec-title">This session</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="sv" id="s-submitted">0</div><div class="sl">Submitted</div></div>
+      <div class="stat-card"><div class="sv" id="s-voted">0</div><div class="sl">Voted</div></div>
+      <div class="stat-card"><div class="sv" id="s-approval">—</div><div class="sl">Approval %</div></div>
+      <div class="stat-card"><div class="sv" id="s-winner">—</div><div class="sl">Winner</div></div>
+    </div>
+  </div>
+
+  <!-- ELIGIBILITY -->
+  <div class="section">
+    <div class="sec-title">Eligibility for next race</div>
+    <p style="font-size:0.78rem; color:var(--muted); margin-bottom:0.9rem;">
+      System recommendation shown. Click <strong style="color:var(--orange)">Override</strong> to manually allow or block a racer regardless of the rule.
+      Overrides are stored and visible on the leaderboard.
+    </p>
+    <div class="elig-table">
+      <div class="elig-row hdr">
+        <div>Racing name</div>
+        <div>Wins total</div>
+        <div>Consecutive</div>
+        <div>Approval</div>
+        <div>Recommendation</div>
+        <div>Override</div>
+      </div>
+      <div id="elig-list">
+        <p style="color:var(--muted); font-size:0.82rem; padding:1rem 0;">Load a session to see eligibility data.</p>
+      </div>
+    </div>
+    <div style="margin-top:1rem; display:flex; gap:0.7rem; flex-wrap:wrap;">
+      <button class="btn btn-gold" onclick="publishEligibility()">📢 Publish to leaderboard</button>
+      <button class="btn btn-ghost" onclick="loadEligibility()">↻ Refresh</button>
+    </div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div class="section">
+    <div class="sec-title">Reset</div>
+    <div class="danger-zone">
+      <p>Reset clears all submissions, votes, and solutions for the <strong id="reset-sess-name">current</strong> session. Race history (wins, approval) is preserved.</p>
+      <button class="btn btn-red" onclick="resetSession()">↺ Reset session</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, remove, get, query, orderByChild, push }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  // ── PASTE YOUR FIREBASE CONFIG HERE ────────────────────────────
+  const firebaseConfig = {
+    apiKey:            "AIzaSyBXMat27V4YU7U79FAjekIRF49pK_stn18",
+    authDomain:        "ee98-race.firebaseapp.com",
+    databaseURL:       "https://ee98-race-default-rtdb.firebaseio.com",
+    projectId:         "ee98-race",
+    storageBucket:     "ee98-race.firebasestorage.app",
+    messagingSenderId: "1082290560398",
+    appId:             "1:1082290560398:web:d1c3671c2122322de5d8df"
+  };
+  // ───────────────────────────────────────────────────────────────
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  let currentSession = 'default';
+  let matlabOn = false;
+  let unsubFns = [];
+
+  // ── LOAD SESSION ──
+  window.loadSession = function() {
+    const val = document.getElementById('session-input').value.trim() || 'default';
+    currentSession = val;
+    document.getElementById('reset-sess-name').textContent = `"${val}"`;
+
+    // Unsubscribe previous listeners
+    unsubFns.forEach(f => f()); unsubFns = [];
+
+    const base     = `sessions/${val}`;
+    const subPath  = `${base}/submissions`;
+    const votePath = `${base}/votes`;
+    const setPath  = `${base}/settings`;
+
+    // Settings / MATLAB toggle
+    const u1 = onValue(ref(db, setPath), snap => {
+      matlabOn = snap.exists() && !!snap.val().matlabRequired;
+      const t = document.getElementById('matlab-toggle');
+      t.classList.toggle('on', matlabOn);
+    });
+    unsubFns.push(u1);
+
+    // Submissions count + winner
+    const u2 = onValue(query(ref(db, subPath), orderByChild('timestamp')), snap => {
+      const E = [];
+      if (snap.exists()) snap.forEach(c => E.push(c.val()));
+      E.sort((a,b)=>a.timestamp-b.timestamp);
+      document.getElementById('s-submitted').textContent = E.length;
+      document.getElementById('s-winner').textContent    = E.length > 0 ? E[0].name : '—';
+    });
+    unsubFns.push(u2);
+
+    // Votes
+    const u3 = onValue(ref(db, votePath), snap => {
+      let yes=0, no=0;
+      if (snap.exists()) snap.forEach(c => c.val().vote==='yes' ? yes++ : no++);
+      const total = yes+no;
+      document.getElementById('s-voted').textContent    = total;
+      document.getElementById('s-approval').textContent = total ? Math.round(yes/total*100)+'%' : '—';
+    });
+    unsubFns.push(u3);
+
+    // Update link display
+    const base_url = window.location.origin + window.location.pathname.replace('eligibility.html','');
+    document.getElementById('link-display').innerHTML =
+      `<strong style="color:var(--text)">Student:</strong> ${base_url}winner.html?session=${val} &nbsp;&nbsp;
+       <strong style="color:var(--text)">Leaderboard:</strong> ${base_url}leaderboard.html?session=${val}`;
+
+    loadEligibility();
+    toast(`Session "${val}" loaded`);
+  };
+
+  // ── MATLAB TOGGLE ──
+  window.toggleMatlab = async function() {
+    matlabOn = !matlabOn;
+    const t = document.getElementById('matlab-toggle');
+    t.classList.toggle('on', matlabOn);
+    await set(ref(db, `sessions/${currentSession}/settings`), { matlabRequired: matlabOn });
+    toast(`MATLAB ${matlabOn ? 'required' : 'optional'} for session "${currentSession}"`);
+  };
+
+  // ── ELIGIBILITY ──
+  window.loadEligibility = async function() {
+    const histSnap = await get(ref(db, 'history'));
+    const overSnap = await get(ref(db, `sessions/${currentSession}/overrides`));
+
+    const racers  = {};
+    if (histSnap.exists()) {
+      histSnap.forEach(rSnap => {
+        const name = rSnap.key;
+        const data = rSnap.val();
+        racers[name] = data;
+      });
+    }
+
+    const overrides = overSnap.exists() ? overSnap.val() : {};
+
+    const list = document.getElementById('elig-list');
+    if (Object.keys(racers).length === 0) {
+      list.innerHTML = '<p style="color:var(--muted);font-size:0.82rem;padding:0.5rem 0;">No race history found yet.</p>';
+      return;
+    }
+
+    list.innerHTML = Object.entries(racers).map(([name, data]) => {
+      const wins       = data.wins || 0;
+      const consec     = data.consecutive || 0;
+      const totalVotes = (data.totalYes||0) + (data.totalNo||0);
+      const approval   = totalVotes ? Math.round((data.totalYes||0)/totalVotes*100) : null;
+      const approvalStr = approval !== null ? approval + '%' : 'N/A';
+      const approvalCls = approval !== null ? (approval < 60 ? 'low' : 'ok') : '';
+
+      // Rule check
+      const blocked_consec   = consec >= 2;
+      const blocked_approval = approval !== null && approval < 60;
+      const systemElig       = !blocked_consec && !blocked_approval;
+
+      const ov = overrides[name.replace(/[^a-zA-Z0-9_]/g, '_')];
+      let recLabel, recCls, reason = '';
+
+      if (ov === true)  { recLabel='Override ✅'; recCls='override'; reason='(manually allowed)'; }
+      else if (ov===false){ recLabel='Override ❌'; recCls='override'; reason='(manually blocked)'; }
+      else if (systemElig){ recLabel='✅ Eligible'; recCls='eligible'; }
+      else { recLabel='❌ Sit out'; recCls='ineligible'; reason = blocked_consec ? '(2 consecutive wins)' : '(approval < 60%)'; }
+
+      const safeKey = name.replace(/[^a-zA-Z0-9_]/g,'_');
+      const isOv    = ov !== undefined;
+
+      return `<div class="elig-row">
+        <div class="racing-name">${name}</div>
+        <div class="stat-val">${wins}</div>
+        <div class="consec-val" style="color:${consec>=2?'var(--red)':'var(--muted)'}">${consec}</div>
+        <div class="approval-val ${approvalCls}">${approvalStr}</div>
+        <div><span class="rec-badge ${recCls}">${recLabel}</span> <span style="font-size:0.65rem;color:var(--muted)">${reason}</span></div>
+        <div><button class="override-btn ${isOv?'active':''}" onclick="toggleOverride('${name}','${safeKey}',${ov})">${isOv ? 'Clear override' : 'Override'}</button></div>
+      </div>`;
+    }).join('');
+  };
+
+  window.toggleOverride = async function(name, key, current) {
+    const path = `sessions/${currentSession}/overrides/${key}`;
+    if (current !== undefined) {
+      await remove(ref(db, path));
+      toast(`Override cleared for ${name}`);
+    } else {
+      // Ask what kind of override
+      const allow = confirm(`Override for "${name}":\nOK = Allow to run\nCancel = Block from running`);
+      await set(ref(db, path), allow);
+      toast(`${name} ${allow?'allowed':'blocked'} for this race`);
+    }
+    loadEligibility();
+  };
+
+  // ── PUBLISH ELIGIBILITY ──
+  window.publishEligibility = async function() {
+    const histSnap = await get(ref(db, 'history'));
+    const overSnap = await get(ref(db, `sessions/${currentSession}/overrides`));
+    const racers   = histSnap.exists() ? histSnap.val() : {};
+    const overrides= overSnap.exists() ? overSnap.val() : {};
+
+    const result = {};
+    Object.entries(racers).forEach(([name, data]) => {
+      const consec   = data.consecutive || 0;
+      const totalV   = (data.totalYes||0)+(data.totalNo||0);
+      const approval = totalV ? Math.round((data.totalYes||0)/totalV*100) : null;
+      const sysElig  = consec < 2 && (approval === null || approval >= 60);
+      const key      = name.replace(/[^a-zA-Z0-9_]/g,'_');
+      const ov       = overrides[key];
+      const eligible = ov !== undefined ? ov : sysElig;
+      const reason   = ov !== undefined ? 'instructor override'
+                     : consec >= 2       ? '2 consecutive wins'
+                     : approval !== null && approval < 60 ? `approval ${approval}% < 60%`
+                     : 'eligible';
+      result[key] = { name, eligible, reason };
+    });
+
+    await set(ref(db, `sessions/${currentSession}/eligibility`), result);
+    toast('Eligibility published to leaderboard ✓');
+  };
+
+  // ── RESET ──
+  window.resetSession = async function() {
+    if (!confirm(`Reset session "${currentSession}"?\nSubmissions, votes and solution will be cleared.\nRace history is preserved.`)) return;
+    await remove(ref(db, `sessions/${currentSession}/submissions`));
+    await remove(ref(db, `sessions/${currentSession}/solution`));
+    await remove(ref(db, `sessions/${currentSession}/votes`));
+    toast(`Session "${currentSession}" reset`);
+    loadSession();
+  };
+
+  // ── COPY LINKS ──
+  window.copyLinks = function() {
+    const base = window.location.origin + window.location.pathname.replace('eligibility.html','');
+    const text = `Student page: ${base}winner.html?session=${currentSession}\nLeaderboard: ${base}leaderboard.html?session=${currentSession}`;
+    navigator.clipboard.writeText(text).then(() => toast('Links copied to clipboard ✓'));
+  };
+
+  // ── TOAST ──
+  function toast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+
+  // Auto-load default session
+  window.loadSession();
+</script>
+</body>
+</html>

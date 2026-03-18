@@ -520,72 +520,6 @@ function activatePortal() {
     return;
   }
 
-async function deleteEntry(key, subPath) {
-  if (!confirm('Remove this entry? The next person will become winner/candidate.')) return;
-  await window._fbRemove(subPath + '/' + key);
-}
-
-async function newRaceAndArchive() {
-  const session = window._currentSession;
-  const msg = session ? 'Archive "' + session + '" and start a new race?' : 'Start a new race?';
-  if (!confirm(msg)) return;
-  if (session) {
-    // Read existing past list before rewriting portal
-    const existingPast = await window._fbGet('portal/past') || {};
-    existingPast['sess_' + Date.now()] = { name: session, archivedAt: Date.now() };
-    // Wipe entire portal node — writes past only, no live key
-    await window._fbSet('portal', { past: existingPast });
-    // Clear session race data
-    await window._fbRemove('sessions/' + session + '/submissions');
-    await window._fbRemove('sessions/' + session + '/solution');
-    await window._fbRemove('sessions/' + session + '/votes');
-  }
-  stopWinnerMusic();
-  window.location.reload();
-}
-
-async function activateSession() {
-  const session = window._currentSession;
-  if (!session) { alert('Launch a session first using the popup.'); return; }
-  const btn = document.getElementById('activate-btn');
-  btn.textContent = 'Activating…'; btn.disabled = true;
-  // Read existing past sessions, then write full portal node with live
-  const existingPast = await window._fbGet('portal/past');
-  const portalData = {
-    live: session,
-    liveSettings: { matlabRequired: window._matlabReq || false }
-  };
-  if (existingPast) portalData.past = existingPast;
-  await window._fbSet('portal', portalData);
-  btn.textContent = '✓ Live on portal!';
-  btn.style.background = 'rgba(46,204,113,0.25)';
-}
-
-async function resetAndArchive() {
-  const session = window._currentSession;
-  if (!session) { alert('No active session.'); return; }
-  if (!confirm('Reset session "' + session + '" and archive it on the portal?')) return;
-  // Archive to portal/past
-  await window._fbPush('portal/past', { name: session, archivedAt: Date.now() });
-  // Clear live portal entry if this session was live
-  await window._fbSet('portal/live', null);
-  await window._fbSet('portal/liveSettings', null);
-  // Clear session data
-  await window._fbRemove('sessions/' + session + '/submissions');
-  await window._fbRemove('sessions/' + session + '/solution');
-  await window._fbRemove('sessions/' + session + '/votes');
-  // Reset display
-  document.getElementById('winner-banner').style.display = 'none';
-  document.getElementById('entries-list').innerHTML = '<div class="empty"><span class="ico">🏁</span>Waiting for submissions…</div>';
-  document.getElementById('sol-panel').style.display = 'none';
-  document.getElementById('mg').classList.remove('has-sol');
-  document.getElementById('vote-results').style.display = 'none';
-  document.getElementById('total-count').textContent = '0';
-  const ab = document.getElementById('activate-btn');
-  ab.textContent = '📡 Activate on portal'; ab.disabled = false;
-  ab.style.background = 'rgba(46,204,113,0.12)';
-}
-
 function copyStudentUrl() {
   const url = document.getElementById('student-url-text').textContent;
   navigator.clipboard.writeText(url).then(() => {
@@ -638,6 +572,45 @@ function restartRace() {
       {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
   }
 
+  // ── ASYNC BUTTON HANDLERS (need Firebase — defined in module scope) ──
+  window.deleteEntry = async function(key, subPath) {
+    if (!confirm('Remove this entry? The next person becomes winner/candidate.')) return;
+    await remove(ref(db, subPath + '/' + key));
+  };
+
+  window.newRaceAndArchive = async function() {
+    const session = window._currentSession;
+    const msg = session ? 'Archive "' + session + '" and start a new race?' : 'Start a new race?';
+    if (!confirm(msg)) return;
+    if (session) {
+      const pastSnap = await get(ref(db, 'portal/past'));
+      const existingPast = pastSnap.exists() ? pastSnap.val() : {};
+      existingPast['sess_' + Date.now()] = { name: session, archivedAt: Date.now() };
+      await set(ref(db, 'portal'), { past: existingPast });
+      await remove(ref(db, 'sessions/' + session + '/submissions'));
+      await remove(ref(db, 'sessions/' + session + '/solution'));
+      await remove(ref(db, 'sessions/' + session + '/votes'));
+    }
+    stopWinnerMusic();
+    window.location.reload();
+  };
+
+  window.activateSession = async function() {
+    const session = window._currentSession;
+    if (!session) { alert('Launch a session first using the popup.'); return; }
+    const btn = document.getElementById('activate-btn');
+    btn.textContent = 'Activating…'; btn.disabled = true;
+    const pastSnap = await get(ref(db, 'portal/past'));
+    const portalData = {
+      live: session,
+      liveSettings: { matlabRequired: window._matlabReq || false }
+    };
+    if (pastSnap.exists()) portalData.past = pastSnap.val();
+    await set(ref(db, 'portal'), portalData);
+    btn.textContent = '✓ Live on portal!';
+    btn.style.background = 'rgba(46,204,113,0.25)';
+  };
+
   window.initLeaderboard = function(session, voteMin, matlabReq) {
     // Update header labels
     document.getElementById('sess-lbl').textContent = 'session: ' + session;
@@ -657,14 +630,7 @@ function restartRace() {
     window._matlabReq = matlabReq;
 
     // Expose Firebase helpers for activate/reset buttons
-    window._fbSet    = async (path, val) => set(ref(db, path), val);
-    window._fbRemove = async (path)      => remove(ref(db, path));
-    window._fbPush   = async (path, val) => push(ref(db, path), val);
-    window._dbRef    = (path)            => ref(db, path);
-    window._fbGet    = async (path)      => {
-      const s = await get(ref(db, path));
-      return s.exists() ? s.val() : null;
-    };
+
     // Show student URL bar with correct session
     const studentUrl = window.location.origin + window.location.pathname.replace('leaderboard.html','winner.html') + '?session=' + session;
     document.getElementById('student-url-text').textContent = studentUrl;

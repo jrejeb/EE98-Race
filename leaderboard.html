@@ -22,6 +22,69 @@ body {
     radial-gradient(ellipse at 5%  0%,   rgba(245,200,66,0.07) 0%, transparent 40%),
     radial-gradient(ellipse at 95% 100%, rgba(91,164,245,0.04) 0%, transparent 40%);
 }
+
+/* ── SETUP MODAL ── */
+#setup-modal {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,0.85);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+}
+.modal-card {
+  background: #161616; border: 1px solid #2a2a2a;
+  border-radius: 20px; padding: 2.2rem 2.5rem;
+  width: 100%; max-width: 480px;
+}
+.modal-card h2 {
+  font-family: 'Syne', sans-serif; font-size: 1.4rem;
+  font-weight: 900; color: #fff; margin-bottom: 0.3rem;
+}
+.modal-card .sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 1.8rem; }
+.field-label {
+  font-size: 0.68rem; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 0.35rem;
+}
+.modal-card input[type="text"] {
+  width: 100%; background: #0A0A0A; border: 1px solid #2a2a2a;
+  border-radius: 9px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+  padding: 0.75rem 0.95rem; margin-bottom: 1.1rem;
+  outline: none; transition: border-color 0.2s;
+}
+.modal-card input[type="text"]:focus { border-color: var(--gold); }
+.modal-card input::placeholder { color: #3a3a3a; }
+
+/* Radio group */
+.radio-group { display: flex; gap: 0.6rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
+.radio-opt {
+  flex: 1; min-width: 80px;
+  background: #0A0A0A; border: 1px solid #2a2a2a;
+  border-radius: 9px; padding: 0.65rem 0.5rem;
+  text-align: center; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  font-size: 0.82rem; color: var(--muted);
+  user-select: none;
+}
+.radio-opt:hover { border-color: #444; color: var(--text); }
+.radio-opt.selected {
+  border-color: var(--gold); background: rgba(245,200,66,0.08);
+  color: var(--gold); font-weight: 500;
+}
+.radio-opt.selected-red {
+  border-color: var(--red); background: rgba(231,76,60,0.08);
+  color: var(--red); font-weight: 500;
+}
+
+.start-btn {
+  width: 100%; background: var(--gold); color: #0A0A0A;
+  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800;
+  border: none; border-radius: 10px; padding: 0.95rem;
+  cursor: pointer; transition: opacity 0.2s;
+  margin-top: 0.5rem;
+}
+.start-btn:hover { opacity: 0.88; }
+
+/* ── HEADER ── */
 header {
   display: flex; align-items: flex-start;
   justify-content: space-between; margin-bottom: 1.5rem; gap: 1rem;
@@ -33,7 +96,8 @@ header {
 }
 .header-left h1 span { color: var(--gold); }
 .header-left .sub {
-  display: flex; align-items: center; gap: 0.8rem; margin-top: 0.5rem; flex-wrap: wrap;
+  display: flex; align-items: center; gap: 0.8rem;
+  margin-top: 0.5rem; flex-wrap: wrap;
 }
 .live-tag {
   display: inline-flex; align-items: center; gap: 0.35rem;
@@ -45,16 +109,25 @@ header {
 .pulse { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 1.4s infinite; }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(0.65)} }
 .sess-tag { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--muted); }
-.matlab-pill {
-  font-size: 0.68rem; font-weight: 500; padding: 0.18rem 0.55rem; border-radius: 100px;
+.topic-tag {
+  font-size: 0.72rem; font-weight: 500; color: var(--blue);
+  background: rgba(91,164,245,0.08); border: 1px solid rgba(91,164,245,0.2);
+  padding: 0.2rem 0.65rem; border-radius: 100px;
 }
+.matlab-pill { font-size: 0.68rem; font-weight: 500; padding: 0.18rem 0.55rem; border-radius: 100px; }
 .matlab-pill.req { background: rgba(231,76,60,0.12); color: var(--red); border: 1px solid rgba(231,76,60,0.25); }
 .matlab-pill.opt { background: rgba(85,85,85,0.12); color: var(--muted); border: 1px solid var(--border); }
+.vote-timer-tag {
+  font-family: 'DM Mono', monospace; font-size: 0.7rem;
+  color: var(--gold); background: rgba(245,200,66,0.08);
+  border: 1px solid rgba(245,200,66,0.2);
+  padding: 0.2rem 0.65rem; border-radius: 100px;
+}
 .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.4rem; }
 .count-big { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 900; color: var(--gold); line-height: 1; }
 .count-lbl { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; text-align: right; }
 
-/* WINNER BANNER */
+/* ── WINNER BANNER ── */
 #winner-banner {
   display: none;
   background: linear-gradient(135deg, rgba(245,200,66,0.09) 0%, transparent 100%);
@@ -74,11 +147,11 @@ header {
   color: var(--gold); font-size: 0.8rem; line-height: 1.5;
 }
 
-/* MAIN GRID */
+/* ── MAIN GRID ── */
 #mg { display: grid; grid-template-columns: 1fr; gap: 1.3rem; }
 #mg.has-sol { grid-template-columns: 1fr 1fr; }
 
-/* SOLUTION PANEL */
+/* ── SOLUTION PANEL ── */
 #sol-panel {
   display: none; background: var(--card);
   border: 1px solid rgba(245,200,66,0.2); border-radius: 16px;
@@ -101,7 +174,7 @@ header {
 }
 .sp-disc strong { color: var(--red); }
 
-/* LIST */
+/* ── LIST ── */
 .list-hdr {
   display: grid; grid-template-columns: 40px 1fr 110px 62px 55px;
   gap: 0.4rem; padding: 0 0.65rem 0.45rem;
@@ -138,7 +211,7 @@ header {
 .empty { text-align: center; padding: 2.5rem; color: var(--muted); }
 .empty .ico { font-size: 2rem; display: block; margin-bottom: 0.5rem; opacity: 0.22; }
 
-/* VOTE RESULTS */
+/* ── VOTE RESULTS ── */
 #vote-results {
   display: none; margin-top: 0.9rem;
   background: var(--card); border: 1px solid var(--border);
@@ -155,13 +228,50 @@ header {
 </head>
 <body>
 
+<!-- ══════════════ SETUP MODAL ══════════════ -->
+<div id="setup-modal">
+  <div class="modal-card">
+    <h2>🏁 Start a new race</h2>
+    <p class="sub">Set up this session before projecting to the class.</p>
+
+    <div class="field-label">Session name</div>
+    <input type="text" id="m-session" placeholder="e.g. w8-instamp" value="default">
+
+    <div class="field-label">Voting window (minutes)</div>
+    <div style="display:flex; gap:0.6rem; align-items:center; margin-bottom:1.1rem;">
+      <div class="radio-group" id="timer-group" style="margin-bottom:0; flex:1;">
+        <div class="radio-opt" onclick="pickTimer(3,this)">3 min</div>
+        <div class="radio-opt selected" onclick="pickTimer(5,this)">5 min</div>
+        <div class="radio-opt" onclick="pickTimer(10,this)">10 min</div>
+        <div class="radio-opt" onclick="pickTimer(null,this)">Custom</div>
+      </div>
+      <input type="number" id="m-timer-custom" min="1" max="60" placeholder="min"
+        style="width:72px; background:#0A0A0A; border:1px solid #2a2a2a; border-radius:9px;
+               color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.95rem;
+               padding:0.75rem 0.7rem; outline:none; display:none;"
+        oninput="selectedTimer=parseInt(this.value)||5">
+    </div>
+
+    <div class="field-label">MATLAB solution</div>
+    <div class="radio-group" id="matlab-group">
+      <div class="radio-opt selected" onclick="pickMatlab(false,this)">Optional</div>
+      <div class="radio-opt" onclick="pickMatlab(true,this)">Required</div>
+    </div>
+
+    <button class="start-btn" onclick="startRace()">🚀 &nbsp; Launch leaderboard</button>
+  </div>
+</div>
+
+<!-- ══════════════ MAIN LEADERBOARD ══════════════ -->
 <header>
   <div class="header-left">
     <h1>🏁 EE98 — Race to the <span>Board</span></h1>
+    <p style="font-size:0.82rem; color:var(--muted); font-style:italic; margin-top:0.3rem; margin-bottom:0.4rem;">"Here We Learn By Doing!"</p>
     <div class="sub">
       <div class="live-tag"><div class="pulse"></div>LIVE</div>
       <span class="sess-tag" id="sess-lbl">session: —</span>
       <span class="matlab-pill opt" id="matlab-pill">MATLAB optional</span>
+      <span class="vote-timer-tag" id="vtimer-tag">🗳️ vote: 5 min</span>
     </div>
   </div>
   <div class="header-right">
@@ -219,20 +329,47 @@ header {
 </div>
 
 <script>
+// ── MODAL STATE ──
+let selectedTimer  = 5;
+let selectedMatlab = false;
+
+function pickTimer(val, el) {
+  selectedTimer = val;
+  document.querySelectorAll('#timer-group .radio-opt').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  const custom = document.getElementById('m-timer-custom');
+  custom.style.display = val === null ? 'block' : 'none';
+  if (val === null) { custom.focus(); }
+}
+
+function pickMatlab(val, el) {
+  selectedMatlab = val;
+  document.querySelectorAll('#matlab-group .radio-opt').forEach(e => {
+    e.classList.remove('selected','selected-red');
+  });
+  el.classList.add(val ? 'selected-red' : 'selected');
+}
+
+function startRace() {
+  const session = document.getElementById('m-session').value.trim() || 'default';
+  // If custom selected, read the number input
+  if (selectedTimer === null) {
+    selectedTimer = parseInt(document.getElementById('m-timer-custom').value) || 5;
+  }
+  document.getElementById('setup-modal').style.display = 'none';
+  initLeaderboard(session, selectedTimer, selectedMatlab);
+}
+
+// ── FANFARE ──
 function playFanfare() {
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     const seq = [
-      {f:440, t:0,    d:0.12, v:0.20},
-      {f:554, t:0.10, d:0.12, v:0.20},
-      {f:659, t:0.20, d:0.12, v:0.20},
-      {f:880, t:0.30, d:0.25, v:0.25},
-      {f:1109,t:0.30, d:0.25, v:0.18},
-      {f:1319,t:0.30, d:0.25, v:0.16},
-      {f:880, t:0.58, d:0.08, v:0.20},
-      {f:1047,t:0.66, d:0.08, v:0.20},
-      {f:1319,t:0.74, d:0.55, v:0.28},
-      {f:1047,t:0.74, d:0.55, v:0.18},
+      {f:440, t:0,    d:0.12, v:0.20},{f:554, t:0.10, d:0.12, v:0.20},
+      {f:659, t:0.20, d:0.12, v:0.20},{f:880, t:0.30, d:0.25, v:0.25},
+      {f:1109,t:0.30, d:0.25, v:0.18},{f:1319,t:0.30, d:0.25, v:0.16},
+      {f:880, t:0.58, d:0.08, v:0.20},{f:1047,t:0.66, d:0.08, v:0.20},
+      {f:1319,t:0.74, d:0.55, v:0.28},{f:1047,t:0.74, d:0.55, v:0.18},
       {f:659, t:0.74, d:0.55, v:0.14},
     ];
     seq.forEach(({f,t,d,v}) => {
@@ -249,10 +386,9 @@ function playFanfare() {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue, query, orderByChild }
+  import { getDatabase, ref, onValue, set, query, orderByChild }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-  // ── PASTE YOUR FIREBASE CONFIG HERE ────────────────────────────
   const firebaseConfig = {
     apiKey:            "AIzaSyBXMat27V4YU7U79FAjekIRF49pK_stn18",
     authDomain:        "ee98-race.firebaseapp.com",
@@ -262,18 +398,9 @@ function playFanfare() {
     messagingSenderId: "1082290560398",
     appId:             "1:1082290560398:web:d1c3671c2122322de5d8df"
   };
-  // ───────────────────────────────────────────────────────────────
 
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
-  const params  = new URLSearchParams(window.location.search);
-  const session = params.get('session') || 'default';
-  document.getElementById('sess-lbl').textContent = 'session: ' + session;
-
-  const subPath  = `sessions/${session}/submissions`;
-  const solPath  = `sessions/${session}/solution`;
-  const votePath = `sessions/${session}/votes`;
-  const setPath  = `sessions/${session}/settings`;
 
   const RC = ['r1','r2','r3','r4','r5'];
   let winnerSeen = false, winnerName = '—';
@@ -283,68 +410,92 @@ function playFanfare() {
       {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
   }
 
-  onValue(ref(db, setPath), snap => {
-    const req = snap.exists() && snap.val().matlabRequired;
-    const p   = document.getElementById('matlab-pill');
-    p.textContent = req ? 'MATLAB required' : 'MATLAB optional';
-    p.className   = 'matlab-pill ' + (req ? 'req' : 'opt');
-  });
+  window.initLeaderboard = function(session, voteMin, matlabReq) {
+    // Update header labels
+    document.getElementById('sess-lbl').textContent = 'session: ' + session;
+    document.getElementById('vtimer-tag').textContent = '🗳️ vote: ' + voteMin + ' min';
 
-  onValue(query(ref(db, subPath), orderByChild('timestamp')), snap => {
-    const E = [];
-    if (snap.exists()) snap.forEach(c => E.push(c.val()));
-    E.sort((a,b) => a.timestamp - b.timestamp);
-    document.getElementById('total-count').textContent = E.length;
+    const matlab_pill = document.getElementById('matlab-pill');
+    matlab_pill.textContent = matlabReq ? 'MATLAB required' : 'MATLAB optional';
+    matlab_pill.className   = 'matlab-pill ' + (matlabReq ? 'req' : 'opt');
 
-    if (E.length > 0) {
-      const w = E[0]; winnerName = w.name;
-      document.getElementById('winner-banner').style.display = 'block';
-      document.getElementById('wb-name').textContent  = w.name;
-      document.getElementById('wb-name2').textContent = w.name;
-      document.getElementById('wb-time').textContent  = fmt(w.timestamp);
-      if (!winnerSeen) { winnerSeen = true; playFanfare(); }
-    } else {
-      document.getElementById('winner-banner').style.display = 'none';
-      winnerSeen = false;
-    }
+    // Write settings to Firebase so winner.html can read them
+    const setPath = `sessions/${session}/settings`;
+    set(ref(db, setPath), {
+      matlabRequired: matlabReq,
+      voteMinutes:    voteMin
+    });
 
-    const list = document.getElementById('entries-list');
-    if (E.length === 0) {
-      list.innerHTML = '<div class="empty"><span class="ico">🏁</span>Waiting for submissions…</div>';
-      return;
-    }
-    list.innerHTML = E.map((e,i) => `
-      <div class="entry ${RC[i]||''}">
-        <div class="rnum">#${i+1}</div>
-        <div class="ename">${e.name}</div>
-        <div class="etime">${fmt(e.timestamp)}</div>
-        <div><span class="pill">${i===0?'10 pts ★':'5 pts'}</span></div>
-        <div class="vtally" id="vt${i}">—</div>
-      </div>`).join('');
-  });
+    const subPath  = `sessions/${session}/submissions`;
+    const solPath  = `sessions/${session}/solution`;
+    const votePath = `sessions/${session}/votes`;
 
-  onValue(ref(db, solPath), snap => {
-    const p = document.getElementById('sol-panel');
-    const g = document.getElementById('mg');
-    if (!snap.exists()) { p.style.display='none'; g.classList.remove('has-sol'); return; }
-    const {code, postedBy} = snap.val();
-    p.style.display='block'; g.classList.add('has-sol');
-    document.getElementById('sp-by').textContent  = 'posted by ' + (postedBy||winnerName);
-    document.getElementById('sp-code').textContent = code;
-  });
+    // ── SUBMISSIONS ──
+    onValue(query(ref(db, subPath), orderByChild('timestamp')), snap => {
+      const all = [];
+      if (snap.exists()) snap.forEach(c => all.push(c.val()));
+      all.sort((a,b) => a.timestamp - b.timestamp);
+      document.getElementById('total-count').textContent = all.length;
 
-  onValue(ref(db, votePath), snap => {
-    let yes=0, no=0;
-    if (snap.exists()) snap.forEach(c => c.val().vote==='yes' ? yes++ : no++);
-    const total = yes+no;
-    if (!total) return;
-    document.getElementById('vote-results').style.display='block';
-    const yp = Math.round(yes/total*100), np = 100-yp;
-    document.getElementById('yes-pct').textContent = yp+'%';
-    document.getElementById('no-pct').textContent  = np+'%';
-    document.getElementById('yes-bar').style.width = yp+'%';
-    document.getElementById('no-bar').style.width  = np+'%';
-  });
+      // Winner = first submission
+      if (all.length > 0) {
+        const w = all[0]; winnerName = w.name;
+        document.getElementById('winner-banner').style.display = 'block';
+        document.getElementById('wb-name').textContent  = w.name;
+        document.getElementById('wb-name2').textContent = w.name;
+        document.getElementById('wb-time').textContent  = fmt(w.timestamp);
+        if (!winnerSeen) { winnerSeen = true; playFanfare(); }
+      } else {
+        document.getElementById('winner-banner').style.display = 'none';
+        winnerSeen = false;
+      }
+
+      // List = everyone EXCEPT the winner (index 0)
+      const listEntries = all.slice(1); // remove winner from list
+      const list = document.getElementById('entries-list');
+
+      if (listEntries.length === 0) {
+        list.innerHTML = all.length > 0
+          ? '<div class="empty"><span class="ico">⏳</span>Waiting for more submissions…</div>'
+          : '<div class="empty"><span class="ico">🏁</span>Waiting for submissions…</div>';
+        return;
+      }
+
+      list.innerHTML = listEntries.map((e, i) => `
+        <div class="entry ${RC[i]||''}">
+          <div class="rnum">#${i+1}</div>
+          <div class="ename">${e.name}</div>
+          <div class="etime">${fmt(e.timestamp)}</div>
+          <div><span class="pill">5 pts</span></div>
+          <div class="vtally" id="vt${i}">—</div>
+        </div>`).join('');
+    });
+
+    // ── SOLUTION ──
+    onValue(ref(db, solPath), snap => {
+      const p = document.getElementById('sol-panel');
+      const g = document.getElementById('mg');
+      if (!snap.exists()) { p.style.display='none'; g.classList.remove('has-sol'); return; }
+      const {code, postedBy} = snap.val();
+      p.style.display='block'; g.classList.add('has-sol');
+      document.getElementById('sp-by').textContent   = 'posted by ' + (postedBy || winnerName);
+      document.getElementById('sp-code').textContent = code;
+    });
+
+    // ── VOTES ──
+    onValue(ref(db, votePath), snap => {
+      let yes=0, no=0;
+      if (snap.exists()) snap.forEach(c => c.val().vote==='yes' ? yes++ : no++);
+      const total = yes+no;
+      if (!total) return;
+      document.getElementById('vote-results').style.display='block';
+      const yp = Math.round(yes/total*100), np = 100-yp;
+      document.getElementById('yes-pct').textContent = yp+'%';
+      document.getElementById('no-pct').textContent  = np+'%';
+      document.getElementById('yes-bar').style.width = yp+'%';
+      document.getElementById('no-bar').style.width  = np+'%';
+    });
+  };
 </script>
 </body>
 </html>

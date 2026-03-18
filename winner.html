@@ -369,19 +369,19 @@ function playFanfare() {
 
     myRank = rank; myName = name;
 
+    // Read instructor-set vote timer from Firebase settings
+    const setSnap = await get(ref(db, `sessions/${session}/settings`));
+    const voteMin = (setSnap.exists() && setSnap.val().voteMinutes)
+      ? setSnap.val().voteMinutes : 5;
+
     show(rank === 1 ? 'state-winner' : 'state-regular');
 
     if (rank !== 1) {
       document.getElementById('rank-display').textContent = '#' + rank;
     }
 
-    // Hide winner post box if not winner or MATLAB not relevant
-    if (rank !== 1) {
-      // nothing to post
-    }
-
-    // Start vote countdown (5 min from now)
-    startVoteCountdown(rank);
+    // Start vote countdown using instructor-set timer
+    startVoteCountdown(rank, voteMin);
   };
 
   // ── POST SOLUTION (winner) ──
@@ -412,11 +412,11 @@ function playFanfare() {
   };
 
   // ── VOTE COUNTDOWN ──
-  function startVoteCountdown(rank) {
+  function startVoteCountdown(rank, voteMin) {
     const timerId = rank === 1 ? 'winner-vote-timer' : 'regular-vote-timer';
     const yesId   = rank === 1 ? 'wv-yes' : 'rv-yes';
     const noId    = rank === 1 ? 'wv-no'  : 'rv-no';
-    let remaining = 5 * 60; // 5 minutes
+    let remaining = (voteMin || 5) * 60;
 
     // Check if no winner solution needed — show different note
     if (rank !== 1) {
@@ -427,6 +427,10 @@ function playFanfare() {
         }
       }, { onlyOnce: true });
     }
+
+    // Show initial timer label
+    document.getElementById(timerId).textContent =
+      `Vote closes in ${String(Math.floor(remaining/60)).padStart(2,'0')}:${String(remaining%60).padStart(2,'0')}`;
 
     voteTimer = setInterval(() => {
       remaining--;

@@ -204,9 +204,15 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
   <div class="success-icon icon-gold">🏆</div>
   <div class="rank-big">#1</div>
   <p style="text-align:center; color:var(--muted); font-size:0.82rem; margin-top:0.3rem;">RACE WINNER</p>
+  <div id="session-info-winner" style="margin-bottom:0.8rem; background:rgba(255,255,255,0.04);
+    border:1px solid #2a2a2a; border-radius:10px; padding:0.6rem 1rem; font-size:0.78rem;
+    color:var(--muted); text-align:center;">
+    <span id="win-session-lbl">session: —</span> &nbsp;·&nbsp; <span id="win-matlab-lbl">—</span>
+  </div>
   <div class="winner-banner">
-    🎉 You're first! Go to the board and walk the class through your solution.<br>
-    You earn <strong>10 pts (2×)</strong>.
+    🎉 Congratulations — you finished first!<br>
+    Please go to the board and walk the class through your solution.<br>
+    <span style="font-size:0.85em; opacity:0.8;">Points are awarded by Professor Rejeb via MoM.</span>
   </div>
 
   <!-- MATLAB post box (shown/hidden based on session setting) -->
@@ -239,9 +245,15 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
   <div class="rank-big" id="rank-display" style="color:var(--text);">#2</div>
   <p style="text-align:center; color:var(--muted); font-size:0.82rem; margin-top:0.3rem;">your finishing position</p>
   <p style="text-align:center; color:var(--muted); font-size:0.85rem; margin-top:1rem; line-height:1.6;">
-    Great work! You earned <strong style="color:#fff">5 bonus points</strong>.<br>
-    Check the leaderboard on the screen.
+    🎉 Great work! Submission recorded.<br>
+    <span style="color:#aaa;">Points awarded by Professor Rejeb via MoM.</span><br>
+    Watch the leaderboard on the screen.
   </p>
+  <div id="session-info-regular" style="margin-top:0.8rem; background:rgba(255,255,255,0.04);
+    border:1px solid #2a2a2a; border-radius:10px; padding:0.65rem 1rem; font-size:0.78rem;
+    color:var(--muted); text-align:center;">
+    <span id="reg-session-lbl">session: —</span> &nbsp;·&nbsp; <span id="reg-matlab-lbl">—</span>
+  </div>
 
   <hr class="divider">
 
@@ -328,11 +340,13 @@ function playFanfare() {
   let myName    = null;
   let voteTimer = null;
   let matlabRequired = false;
+  window._matlabReq  = false;
 
   // Load session settings (MATLAB required toggle)
   onValue(ref(db, setPath), snap => {
     if (snap.exists()) {
-      matlabRequired = snap.val().matlabRequired || false;
+      matlabRequired = !!snap.val().matlabRequired;
+      window._matlabReq = matlabRequired;
     }
     const badge = document.getElementById('matlab-badge');
     if (matlabRequired) {
@@ -379,6 +393,18 @@ function playFanfare() {
     if (rank !== 1) {
       document.getElementById('rank-display').textContent = '#' + rank;
     }
+
+    // Show session info on success screens
+    const matlabLabel = window._matlabReq ? 'MATLAB required' : 'MATLAB optional';
+    const sessLabel   = 'session: ' + session;
+    ['reg-session-lbl','win-session-lbl'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = sessLabel;
+    });
+    ['reg-matlab-lbl','win-matlab-lbl'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = matlabLabel;
+    });
 
     // Start vote countdown using instructor-set timer
     startVoteCountdown(rank, voteMin);

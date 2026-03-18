@@ -401,25 +401,115 @@ function startRace() {
   initLeaderboard(session, selectedTimer, selectedMatlab);
 }
 
-// ── FANFARE ──
-function playFanfare() {
+// ══════════════════════════════════════════════════
+// EE98 AUDIO SYSTEM
+// Winner music  → plays for 30 sec (loops), auto-stops
+// Candidate sound → single 10-sec chime for 2nd+ submissions
+// ══════════════════════════════════════════════════
+let _audioCtx    = null;
+let _winnerNodes = [];
+let _winnerTimer = null;
+let _winnerPlaying = false;
+
+function _getCtx() {
+  if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (_audioCtx.state === 'suspended') _audioCtx.resume();
+  return _audioCtx;
+}
+
+function stopWinnerMusic() {
+  _winnerPlaying = false;
+  clearTimeout(_winnerTimer);
+  _winnerNodes.forEach(n => { try { n.stop(0); } catch(e){} });
+  _winnerNodes = [];
+}
+
+// ── WINNER MUSIC: triumphant fanfare, loops for 30 sec ──
+function playWinnerMusic() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const seq = [
-      {f:440, t:0,    d:0.12, v:0.20},{f:554, t:0.10, d:0.12, v:0.20},
-      {f:659, t:0.20, d:0.12, v:0.20},{f:880, t:0.30, d:0.25, v:0.25},
-      {f:1109,t:0.30, d:0.25, v:0.18},{f:1319,t:0.30, d:0.25, v:0.16},
-      {f:880, t:0.58, d:0.08, v:0.20},{f:1047,t:0.66, d:0.08, v:0.20},
-      {f:1319,t:0.74, d:0.55, v:0.28},{f:1047,t:0.74, d:0.55, v:0.18},
-      {f:659, t:0.74, d:0.55, v:0.14},
+    if (_winnerPlaying) return;
+    _winnerPlaying = true;
+    const ctx = _getCtx();
+
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0.18, ctx.currentTime);
+    master.connect(ctx.destination);
+
+    // Triumphant melody in C major — energetic ascending fanfare
+    const melody = [
+      [523,0.00,0.13],[659,0.13,0.13],[784,0.26,0.13],[1047,0.39,0.45],
+      [880,0.90,0.18],[1047,1.08,0.18],[880,1.26,0.13],[784,1.39,0.13],[659,1.52,0.32],
+      [523,1.90,0.10],[659,2.00,0.10],[784,2.10,0.10],[1047,2.20,0.50],
+      [784,2.76,0.16],[880,2.92,0.16],[1047,3.08,0.85],
+      [523,4.00,0.09],[659,4.09,0.09],[784,4.18,0.09],[880,4.27,0.09],[1047,4.36,0.60],
+      [784,5.00,0.14],[659,5.14,0.14],[523,5.28,0.85],
     ];
-    seq.forEach(({f,t,d,v}) => {
+    const bass = [
+      [131,0.00,0.38],[165,0.90,0.38],[131,1.52,0.38],
+      [131,1.90,0.38],[165,2.76,0.38],[131,3.08,0.78],
+      [131,4.00,0.38],[165,4.36,0.38],[131,5.28,0.85],
+    ];
+
+    const loopLen = 6.2;
+    const loops   = Math.ceil(30 / loopLen);
+
+    for (let lp = 0; lp < loops; lp++) {
+      const off    = lp * loopLen;
+      const fadeVol = Math.max(0.3, 1 - lp * 0.08); // gentle fade over loops
+
+      melody.forEach(([freq, t, dur]) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'square'; o.frequency.value = freq;
+        o.connect(g); g.connect(master);
+        const st = ctx.currentTime + off + t;
+        g.gain.setValueAtTime(0, st);
+        g.gain.linearRampToValueAtTime(0.55 * fadeVol, st + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.001, st + dur);
+        o.start(st); o.stop(st + dur + 0.05);
+        _winnerNodes.push(o);
+      });
+
+      bass.forEach(([freq, t, dur]) => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sawtooth'; o.frequency.value = freq;
+        o.connect(g); g.connect(master);
+        const st = ctx.currentTime + off + t;
+        g.gain.setValueAtTime(0, st);
+        g.gain.linearRampToValueAtTime(0.28 * fadeVol, st + 0.03);
+        g.gain.exponentialRampToValueAtTime(0.001, st + dur);
+        o.start(st); o.stop(st + dur + 0.05);
+        _winnerNodes.push(o);
+      });
+    }
+
+    _winnerTimer = setTimeout(stopWinnerMusic, 30000);
+  } catch(e) { console.warn('Audio error:', e); }
+}
+
+function playFanfare() { playWinnerMusic(); }
+
+// ── CANDIDATE SOUND: warm bell chime, ~10 sec ──
+function playCandidateSound() {
+  try {
+    const ctx = _getCtx();
+    // Pentatonic bell tones — pleasant, not intrusive
+    const bells = [
+      [523,0.0,1.4,0.16],[659,0.2,1.2,0.13],[784,0.4,1.0,0.11],
+      [1047,0.6,0.9,0.10],[1319,0.8,1.6,0.09],
+      [1047,2.2,1.1,0.07],[784,2.8,0.9,0.05],
+      [523,3.5,1.4,0.10],[659,3.7,1.2,0.08],[784,3.9,1.0,0.07],
+      [1047,4.1,0.9,0.06],[1319,4.3,1.6,0.05],
+      [523,7.0,1.8,0.06],[659,7.3,1.5,0.04],
+    ];
+    bells.forEach(([freq, t, dur, vol]) => {
       const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
       o.connect(g); g.connect(ctx.destination);
-      o.type = 'triangle'; o.frequency.value = f;
-      g.gain.setValueAtTime(v, ctx.currentTime + t);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + d);
-      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + d + 0.05);
+      const st = ctx.currentTime + t;
+      g.gain.setValueAtTime(0, st);
+      g.gain.linearRampToValueAtTime(vol, st + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.001, st + dur);
+      o.start(st); o.stop(st + dur + 0.1);
     });
   } catch(e) {}
 }
@@ -450,6 +540,7 @@ async function newRaceAndArchive() {
     await window._fbRemove('sessions/' + session + '/solution');
     await window._fbRemove('sessions/' + session + '/votes');
   }
+  stopWinnerMusic();
   window.location.reload();
 }
 
@@ -579,7 +670,9 @@ function restartRace() {
     document.getElementById('student-url-text').textContent = studentUrl;
     document.getElementById('student-url-bar').style.display = 'flex';
 
-    window._currentSession = session;
+    window._currentSession  = session;
+    window._prevCandCount   = 0;
+    stopWinnerMusic(); // stop any music from previous race
 
     const subPath  = `sessions/${session}/submissions`;
     const solPath  = `sessions/${session}/solution`;
@@ -602,7 +695,7 @@ function restartRace() {
         // Delete winner button
         document.getElementById('wb-delete').onclick = () => deleteEntry(w._key, subPath);
         document.getElementById('wb-delete').style.display = 'inline-block';
-        if (!winnerSeen) { winnerSeen = true; playFanfare(); }
+        if (!winnerSeen) { winnerSeen = true; playWinnerMusic(); }
       } else {
         document.getElementById('winner-banner').style.display = 'none';
         document.getElementById('wb-delete').style.display = 'none';
@@ -613,6 +706,12 @@ function restartRace() {
       const candidates = all.slice(1);
       const list = document.getElementById('entries-list');
       const candLabels = ['Champion Candidate #1','Champion Candidate #2','Champion Candidate #3'];
+
+      // Play candidate sound when new candidate arrives (not first winner)
+      if (all.length > 1 && candidates.length > window._prevCandCount) {
+        playCandidateSound();
+      }
+      window._prevCandCount = candidates.length;
 
       if (all.length === 0) {
         list.innerHTML = '<div class="empty"><span class="ico">🏁</span>No submissions yet — race is open!</div>';
@@ -642,6 +741,9 @@ function restartRace() {
     });
 
     // ── SOLUTION ──
+    // Track current winner to detect changes
+    let currentWinnerName = null;
+
     onValue(ref(db, solPath), snap => {
       const p = document.getElementById('sol-panel');
       const g = document.getElementById('mg');
@@ -650,6 +752,29 @@ function restartRace() {
       p.style.display='block'; g.classList.add('has-sol');
       document.getElementById('sp-by').textContent   = 'posted by ' + (postedBy || winnerName);
       document.getElementById('sp-code').textContent = code;
+    });
+
+    // When submissions change, check if winner changed and update solution panel
+    onValue(query(ref(db, subPath), orderByChild('timestamp')), snap => {
+      if (!snap.exists()) return;
+      const all = [];
+      snap.forEach(c => all.push({...c.val(), _key: c.key}));
+      all.sort((a,b) => a.timestamp - b.timestamp);
+      if (all.length === 0) return;
+      const newWinner = all[0].name;
+      if (currentWinnerName !== null && currentWinnerName !== newWinner) {
+        // Winner changed — check if new winner has a solution, clear old one
+        get(ref(db, `sessions/${session}/submissions`)).then(() => {
+          // Look for new winner's submitted code in their submission
+          const newWinnerEntry = all[0];
+          if (!newWinnerEntry.hasMatlab) {
+            // New winner has no code — clear solution panel
+            set(ref(db, solPath), null);
+          }
+          // If they have code it was already posted on submit — nothing to do
+        });
+      }
+      currentWinnerName = newWinner;
     });
 
     // ── VOTES ──

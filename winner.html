@@ -384,7 +384,25 @@ function playFanfare() {
     if (!name) { errName.style.display = 'block'; nameEl.focus(); return; }
     if (matlabRequired && !code) { errMatlab.style.display = 'block'; codeEl.focus(); return; }
 
-    btn.disabled = true; btn.textContent = 'Submitting…';
+    btn.disabled = true; btn.textContent = 'Checking…';
+
+    // Bug 3: Check for duplicate racing name in this session
+    const existingSnap = await get(query(ref(db, subPath), orderByChild('timestamp')));
+    if (existingSnap.exists()) {
+      const nameLower = name.toLowerCase().trim();
+      let duplicate = false;
+      existingSnap.forEach(c => {
+        if (c.val().name && c.val().name.toLowerCase().trim() === nameLower) duplicate = true;
+      });
+      if (duplicate) {
+        btn.disabled = false; btn.textContent = '🏁 \u00a0 I finished — submit!';
+        errName.textContent = '⚠️ This racing name is already taken. Choose a different name.';
+        errName.style.display = 'block';
+        nameEl.focus(); return;
+      }
+    }
+
+    btn.textContent = 'Submitting…';
 
     const timestamp = Date.now();
     const snap = await get(query(ref(db, subPath), orderByChild('timestamp')));
@@ -428,8 +446,12 @@ function playFanfare() {
       if (el) el.textContent = matlabLabel;
     });
 
-    // Start vote countdown using instructor-set timer
-    startVoteCountdown(rank, voteMin);
+    // Calculate remaining vote time based on submission timestamp
+    // (handles late joiners who submit close to deadline)
+    const elapsedSeconds = Math.floor((Date.now() - timestamp) / 1000);
+    const totalSeconds   = voteMin * 60;
+    const remainingVote  = Math.max(0, totalSeconds - elapsedSeconds);
+    startVoteCountdown(rank, remainingVote);
   };
 
   // ── POST SOLUTION (winner) ──
@@ -460,11 +482,11 @@ function playFanfare() {
   };
 
   // ── VOTE COUNTDOWN ──
-  function startVoteCountdown(rank, voteMin) {
+  function startVoteCountdown(rank, remainingSeconds) {
     const timerId = rank === 1 ? 'winner-vote-timer' : 'regular-vote-timer';
     const yesId   = rank === 1 ? 'wv-yes' : 'rv-yes';
     const noId    = rank === 1 ? 'wv-no'  : 'rv-no';
-    let remaining = (voteMin || 5) * 60;
+    let remaining = remainingSeconds || 300; // fallback 5 min
 
     // Check if no winner solution needed — show different note
     if (rank !== 1) {

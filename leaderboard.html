@@ -277,16 +277,47 @@ header {
   <div class="header-right">
     <div class="count-big" id="total-count">0</div>
     <div class="count-lbl">submitted</div>
-    <button onclick="restartRace()" style="margin-top:0.5rem; background:transparent;
-      border:1px solid #2a2a2a; color:var(--muted); font-family:'DM Sans',sans-serif;
-      font-size:0.72rem; padding:0.35rem 0.8rem; border-radius:8px; cursor:pointer;
-      transition:border-color 0.2s,color 0.2s;"
-      onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
-      onmouseout="this.style.borderColor='#2a2a2a';this.style.color='var(--muted)'">
-      ↺ New race
-    </button>
+    <div style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap; justify-content:flex-end;">
+      <button id="activate-btn" onclick="activateSession()"
+        style="background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.3);
+        color:var(--green); font-family:'DM Sans',sans-serif; font-size:0.72rem;
+        padding:0.35rem 0.8rem; border-radius:8px; cursor:pointer; transition:all 0.2s;"
+        title="Make this session visible to students on portal.html">
+        📡 Activate on portal
+      </button>
+      <button onclick="resetAndArchive()"
+        style="background:rgba(231,76,60,0.08); border:1px solid rgba(231,76,60,0.25);
+        color:var(--red); font-family:'DM Sans',sans-serif; font-size:0.72rem;
+        padding:0.35rem 0.8rem; border-radius:8px; cursor:pointer;">
+        ✕ Reset &amp; archive
+      </button>
+      <button onclick="restartRace()"
+        style="background:transparent; border:1px solid #2a2a2a; color:var(--muted);
+        font-family:'DM Sans',sans-serif; font-size:0.72rem;
+        padding:0.35rem 0.8rem; border-radius:8px; cursor:pointer;">
+        ↺ New race
+      </button>
+    </div>
   </div>
 </header>
+
+<!-- Student URL bar — shown after setup -->
+<div id="student-url-bar" style="display:none; margin-bottom:1rem;
+  background:rgba(91,164,245,0.07); border:1px solid rgba(91,164,245,0.2);
+  border-radius:12px; padding:0.7rem 1.2rem;
+  display:none; align-items:center; gap:1rem; flex-wrap:wrap;">
+  <span style="font-size:0.75rem; color:var(--blue); font-weight:500; white-space:nowrap;">
+    📱 Student link:
+  </span>
+  <code id="student-url-text" style="font-family:'DM Mono',monospace; font-size:0.75rem;
+    color:var(--text); flex:1; word-break:break-all;"></code>
+  <button onclick="copyStudentUrl()" style="background:rgba(91,164,245,0.15);
+    border:1px solid rgba(91,164,245,0.3); color:var(--blue);
+    font-size:0.72rem; padding:0.3rem 0.8rem; border-radius:7px;
+    cursor:pointer; white-space:nowrap; font-family:'DM Sans',sans-serif;">
+    Copy
+  </button>
+</div>
 
 <div id="winner-banner">
   <div class="wb-row">
@@ -391,6 +422,90 @@ function playFanfare() {
   } catch(e) {}
 }
 
+function activatePortal() {
+  if (!window._currentSession) {
+    alert('Launch a session first before activating the portal.');
+    return;
+  }
+  // Write active session to Firebase portal node
+  import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js').then(({ ref, set, getDatabase }) => {
+    const db2 = getDatabase();
+    set(ref(db2, 'portal/activeSession'), window._currentSession).then(() => {
+      const btn = document.getElementById('activate-btn');
+      btn.textContent = '✓ Portal live!';
+      btn.style.background = 'rgba(46,204,113,0.2)';
+      setTimeout(() => { btn.textContent = '▶ Activate portal'; btn.style.background = 'rgba(46,204,113,0.12)'; }, 3000);
+    });
+  });
+}
+
+function resetPortal() {
+  if (!window._currentSession) return;
+  if (!confirm('End the race and archive session "' + window._currentSession + '" on the portal?')) return;
+  import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js').then(({ ref, set, remove, getDatabase }) => {
+    const db2 = getDatabase();
+    const sess = window._currentSession;
+    // Archive to history
+    set(ref(db2, 'portal/history/' + sess.replace(/[^a-zA-Z0-9_-]/g,'_')), {
+      key: sess,
+      archivedAt: Date.now()
+    }).then(() => {
+      // Clear active session
+      return remove(ref(db2, 'portal/activeSession'));
+    }).then(() => {
+      const btn = document.getElementById('reset-btn');
+      btn.textContent = '✓ Archived!';
+      setTimeout(() => { btn.textContent = '⏹ End race'; }, 3000);
+    });
+  });
+}
+
+async function activateSession() {
+  const session = window._currentSession;
+  if (!session) { alert('Launch a session first using the popup.'); return; }
+  const btn = document.getElementById('activate-btn');
+  btn.textContent = 'Activating…'; btn.disabled = true;
+  // Write to portal node — portal.html listens here
+  await window._fbSet('portal/live', session);
+  await window._fbSet('portal/liveSettings', { matlabRequired: window._matlabReq || false });
+  btn.textContent = '✓ Live on portal!';
+  btn.style.background = 'rgba(46,204,113,0.25)';
+}
+
+async function resetAndArchive() {
+  const session = window._currentSession;
+  if (!session) { alert('No active session.'); return; }
+  if (!confirm('Reset session "' + session + '" and archive it on the portal?')) return;
+  // Archive to portal/past
+  await window._fbPush('portal/past', { name: session, archivedAt: Date.now() });
+  // Clear live portal entry if this session was live
+  await window._fbSet('portal/live', null);
+  await window._fbSet('portal/liveSettings', null);
+  // Clear session data
+  await window._fbRemove('sessions/' + session + '/submissions');
+  await window._fbRemove('sessions/' + session + '/solution');
+  await window._fbRemove('sessions/' + session + '/votes');
+  // Reset display
+  document.getElementById('winner-banner').style.display = 'none';
+  document.getElementById('entries-list').innerHTML = '<div class="empty"><span class="ico">🏁</span>Waiting for submissions…</div>';
+  document.getElementById('sol-panel').style.display = 'none';
+  document.getElementById('mg').classList.remove('has-sol');
+  document.getElementById('vote-results').style.display = 'none';
+  document.getElementById('total-count').textContent = '0';
+  const ab = document.getElementById('activate-btn');
+  ab.textContent = '📡 Activate on portal'; ab.disabled = false;
+  ab.style.background = 'rgba(46,204,113,0.12)';
+}
+
+function copyStudentUrl() {
+  const url = document.getElementById('student-url-text').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
 function restartRace() {
   if (!confirm('Start a new race? This will reset the current session display.')) return;
   // Show setup modal again — instructor fills in new session
@@ -410,7 +525,7 @@ function restartRace() {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set, query, orderByChild }
+  import { getDatabase, ref, onValue, set, remove, query, orderByChild }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -449,6 +564,24 @@ function restartRace() {
       matlabRequired: matlabReq,
       voteMinutes:    voteMin
     });
+
+    window._matlabReq = matlabReq;
+
+    // Expose Firebase helpers for activate/reset buttons
+    window._fbSet    = async (path, val) => set(ref(db, path), val);
+    window._fbRemove = async (path)      => remove(ref(db, path));
+    window._fbPush   = async (path, val) => push(ref(db, path), val);
+    window._fbGet    = async (path) => {
+      const { get: fbGet } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+      const s = await fbGet(ref(db, path)); return s.exists() ? s.val() : null;
+    };
+
+    // Show student URL bar with correct session
+    const studentUrl = window.location.origin + window.location.pathname.replace('leaderboard.html','winner.html') + '?session=' + session;
+    document.getElementById('student-url-text').textContent = studentUrl;
+    document.getElementById('student-url-bar').style.display = 'flex';
+
+    window._currentSession = session;
 
     const subPath  = `sessions/${session}/submissions`;
     const solPath  = `sessions/${session}/solution`;

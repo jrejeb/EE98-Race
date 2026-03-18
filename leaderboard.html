@@ -285,16 +285,12 @@ header {
         title="Make this session visible to students on portal.html">
         📡 Activate on portal
       </button>
-      <button onclick="resetAndArchive()"
-        style="background:rgba(231,76,60,0.08); border:1px solid rgba(231,76,60,0.25);
-        color:var(--red); font-family:'DM Sans',sans-serif; font-size:0.72rem;
-        padding:0.35rem 0.8rem; border-radius:8px; cursor:pointer;">
-        ✕ Reset &amp; archive
-      </button>
-      <button onclick="restartRace()"
+      <button onclick="newRaceAndArchive()"
         style="background:transparent; border:1px solid #2a2a2a; color:var(--muted);
         font-family:'DM Sans',sans-serif; font-size:0.72rem;
-        padding:0.35rem 0.8rem; border-radius:8px; cursor:pointer;">
+        padding:0.35rem 0.8rem; border-radius:8px; cursor:pointer; transition:all 0.2s;"
+        onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+        onmouseout="this.style.borderColor='#2a2a2a';this.style.color='var(--muted)'">
         ↺ New race
       </button>
     </div>
@@ -328,8 +324,14 @@ header {
       <div class="wb-time" id="wb-time">—</div>
     </div>
   </div>
-  <div class="wb-inst">
-    📣 <strong id="wb-name2">—</strong> — please come to the board and walk the class through your solution. You earn <strong>10 pts (2×)</strong>!
+  <div class="wb-inst" style="display:flex; align-items:center; gap:0.8rem;">
+    <span style="flex:1;">📣 <strong id="wb-name2">—</strong> — please come to the board and walk the class through your solution.</span>
+    <button id="wb-delete" onclick="" display="none"
+      style="display:none; background:rgba(231,76,60,0.12); border:1px solid rgba(231,76,60,0.3);
+      color:var(--red); font-size:0.72rem; padding:0.3rem 0.7rem;
+      border-radius:7px; cursor:pointer; white-space:nowrap; flex-shrink:0;">
+      ❌ Remove
+    </button>
   </div>
 </div>
 
@@ -460,6 +462,32 @@ function resetPortal() {
   });
 }
 
+async function deleteEntry(key, subPath) {
+  if (!confirm('Remove this entry? The next person will become winner/candidate.')) return;
+  const { remove: fbRemove } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+  await fbRemove(window._dbRef(subPath + '/' + key));
+}
+
+async function newRaceAndArchive() {
+  const session = window._currentSession;
+  const msg = session
+    ? 'Archive session "' + session + '" and start a new race?
+This clears all current data.'
+    : 'Start a new race?';
+  if (!confirm(msg)) return;
+  if (session) {
+    // Archive to portal/past
+    await window._fbPush('portal/past', { name: session, archivedAt: Date.now() });
+    await window._fbSet('portal/live', null);
+    await window._fbSet('portal/liveSettings', null);
+    // Clear session data
+    await window._fbRemove('sessions/' + session + '/submissions');
+    await window._fbRemove('sessions/' + session + '/solution');
+    await window._fbRemove('sessions/' + session + '/votes');
+  }
+  window.location.reload();
+}
+
 async function activateSession() {
   const session = window._currentSession;
   if (!session) { alert('Launch a session first using the popup.'); return; }
@@ -571,6 +599,7 @@ function restartRace() {
     window._fbSet    = async (path, val) => set(ref(db, path), val);
     window._fbRemove = async (path)      => remove(ref(db, path));
     window._fbPush   = async (path, val) => push(ref(db, path), val);
+    window._dbRef    = (path)            => ref(db, path);
     window._fbGet    = async (path) => {
       const { get: fbGet } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
       const s = await fbGet(ref(db, path)); return s.exists() ? s.val() : null;
@@ -589,8 +618,8 @@ function restartRace() {
 
     // ── SUBMISSIONS ──
     onValue(query(ref(db, subPath), orderByChild('timestamp')), snap => {
-      const all = [];
-      if (snap.exists()) snap.forEach(c => all.push(c.val()));
+      const all = []; const keys = [];
+      if (snap.exists()) snap.forEach(c => { all.push({...c.val(), _key: c.key}); keys.push(c.key); });
       all.sort((a,b) => a.timestamp - b.timestamp);
       document.getElementById('total-count').textContent = all.length;
 
@@ -601,31 +630,46 @@ function restartRace() {
         document.getElementById('wb-name').textContent  = w.name;
         document.getElementById('wb-name2').textContent = w.name;
         document.getElementById('wb-time').textContent  = fmt(w.timestamp);
+        // Delete winner button
+        document.getElementById('wb-delete').onclick = () => deleteEntry(w._key, subPath);
+        document.getElementById('wb-delete').style.display = 'inline-block';
         if (!winnerSeen) { winnerSeen = true; playFanfare(); }
       } else {
         document.getElementById('winner-banner').style.display = 'none';
+        document.getElementById('wb-delete').style.display = 'none';
         winnerSeen = false;
       }
 
-      // List = everyone EXCEPT the winner (index 0)
-      const listEntries = all.slice(1); // remove winner from list
+      // List = candidates (everyone except winner, max shown with labels)
+      const candidates = all.slice(1);
       const list = document.getElementById('entries-list');
+      const candLabels = ['Champion Candidate #1','Champion Candidate #2','Champion Candidate #3'];
 
-      if (listEntries.length === 0) {
-        list.innerHTML = all.length > 0
-          ? '<div class="empty"><span class="ico">⏳</span>Waiting for more submissions…</div>'
-          : '<div class="empty"><span class="ico">🏁</span>Waiting for submissions…</div>';
+      if (all.length === 0) {
+        list.innerHTML = '<div class="empty"><span class="ico">🏁</span>No submissions yet — race is open!</div>';
+        return;
+      }
+      if (candidates.length === 0) {
+        list.innerHTML = '<div class="empty" style="padding:1.2rem; font-size:0.82rem; color:var(--muted);">No other submissions yet.</div>';
         return;
       }
 
-      list.innerHTML = listEntries.map((e, i) => `
-        <div class="entry ${RC[i]||''}">
-          <div class="rnum">#${i+1}</div>
-          <div class="ename">${e.name}</div>
+      list.innerHTML = candidates.map((e, i) => {
+        const label = candLabels[i] || ('Participant #' + (i+1));
+        const cls   = RC[i] || '';
+        return `<div class="entry ${cls}" style="grid-template-columns:1fr auto auto auto;">
+          <div class="ename" style="grid-column:1;">
+            <span style="font-size:0.65rem;color:var(--muted);display:block;margin-bottom:0.1rem;">${label}</span>
+            <span style="font-weight:600;">${e.name}</span>
+          </div>
           <div class="etime">${fmt(e.timestamp)}</div>
           <div><span class="pill">5 pts</span></div>
-          <div class="vtally" id="vt${i}">—</div>
-        </div>`).join('');
+          <button onclick="deleteEntry('${e._key}','${subPath}')"
+            style="background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.25);
+            color:var(--red); font-size:0.7rem; padding:0.2rem 0.5rem;
+            border-radius:6px; cursor:pointer; line-height:1;">❌</button>
+        </div>`;
+      }).join('');
     });
 
     // ── SOLUTION ──

@@ -175,6 +175,13 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
 <!-- ══════════════════ FORM STATE ══════════════════ -->
 <div class="card" id="state-form">
   <div class="ee98-tag">🏁 EE98 — Race to the Board</div>
+  <div id="no-session-warn" style="display:none; margin-bottom:1rem;
+    background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.3);
+    border-radius:10px; padding:0.7rem 1rem; font-size:0.8rem;
+    color:#e74c3c; line-height:1.5; text-align:center;">
+    ⚠️ No session in your link!<br>
+    <span style="color:var(--muted);">Use the link shown on the classroom screen.</span>
+  </div>
   <h1>Enter the race</h1>
   <p class="subtitle">
     🥇 <strong>First to finish → 10 pts</strong> &nbsp;·&nbsp; ✅ <strong>Everyone else → 5 pts</strong><br>
@@ -188,7 +195,7 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
   <!-- MATLAB section — shown/hidden based on session setting -->
   <div id="matlab-section">
     <div class="matlab-header">
-      <div class="field-label" style="margin:0;">Your MATLAB solution</div>
+      <div class="field-label" style="margin:0;">Your MATLAB solution <span style="color:var(--muted);font-size:0.65rem;text-transform:none;letter-spacing:0;">(posted live with your name if you win)</span></div>
       <span class="matlab-req-badge optional" id="matlab-badge">Optional</span>
     </div>
     <textarea id="matlab-code" placeholder="Paste your MATLAB Calculator work here&#10;e.g.&#10;va = v1&#10;vb = v2&#10;i = (va-vb)/R4&#10;vo1 = va + R3*i&#10;vo2 = vb - R3*i&#10;vo = (R2/R1)*(vo2-vo1)"></textarea>
@@ -215,14 +222,14 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
     <span style="font-size:0.85em; opacity:0.8;">Points are awarded by Professor Rejeb via MoM.</span>
   </div>
 
-  <!-- MATLAB post box (shown/hidden based on session setting) -->
-  <div class="matlab-box" id="winner-post-box">
-    <h3>📋 Post your MATLAB solution to the screen</h3>
-    <p class="note">Your code will appear live on the leaderboard for classmates to reference. They still have their own unique values — this is a method guide only.</p>
-    <div class="field-label">MATLAB code</div>
-    <textarea id="winner-matlab" placeholder="Paste your MATLAB Calculator solution…"></textarea>
-    <button class="btn btn-green" id="post-btn" onclick="postSolution()">📡 &nbsp; Post to leaderboard</button>
-    <div class="posted-ok" id="posted-ok">✓ Solution is live on screen!</div>
+  <!-- Solution auto-posted on submit — show confirmation -->
+  <div class="matlab-box" id="winner-post-box" style="text-align:center;">
+    <div id="posted-ok" style="color:var(--green); font-size:0.88rem; line-height:1.6;">
+      📡 Your MATLAB solution has been posted to the leaderboard screen automatically.
+    </div>
+    <div id="no-code-note" style="display:none; color:var(--muted); font-size:0.82rem; line-height:1.6;">
+      You did not paste a MATLAB solution. You can write your solution on the board directly.
+    </div>
   </div>
 
   <hr class="divider">
@@ -354,6 +361,10 @@ function playFanfare() {
     } else {
       badge.textContent = 'Optional'; badge.className = 'matlab-req-badge optional';
     }
+    // Also update session label in form subtitle
+    const sessDisplay = params.get('session') || 'default';
+    const subtitleEl = document.getElementById('form-session-lbl');
+    if (subtitleEl) subtitleEl.textContent = sessDisplay;
   });
 
   // ── SUBMIT ──
@@ -381,6 +392,11 @@ function playFanfare() {
 
     await push(ref(db, subPath), { name, timestamp, rank, hasMatlab: !!code });
 
+    // If winner AND has code, post solution immediately — no second step needed
+    if (rank === 1 && code) {
+      await set(ref(db, solPath), { code, postedBy: name, postedAt: timestamp });
+    }
+
     myRank = rank; myName = name;
 
     // Read instructor-set vote timer from Firebase settings
@@ -392,6 +408,12 @@ function playFanfare() {
 
     if (rank !== 1) {
       document.getElementById('rank-display').textContent = '#' + rank;
+    }
+
+    // Show correct winner note based on whether code was submitted
+    if (rank === 1) {
+      document.getElementById('posted-ok').style.display    = code ? 'block' : 'none';
+      document.getElementById('no-code-note').style.display = code ? 'none'  : 'block';
     }
 
     // Show session info on success screens
@@ -481,6 +503,11 @@ function playFanfare() {
 
   document.getElementById('racing-name')
     .addEventListener('keydown', e => { if (e.key === 'Enter') window.submitRace(); });
+
+  // Warn if no session param in URL
+  if (!params.get('session')) {
+    document.getElementById('no-session-warn').style.display = 'block';
+  }
 
   // Auto-fill if student clicked a suggestion on the rules page
   const saved = sessionStorage.getItem('ee98_racename');

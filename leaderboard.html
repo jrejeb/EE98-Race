@@ -393,12 +393,21 @@ function pickMatlab(val, el) {
 
 function startRace() {
   const session = document.getElementById('m-session').value.trim() || 'default';
-  // If custom selected, read the number input
   if (selectedTimer === null) {
     selectedTimer = parseInt(document.getElementById('m-timer-custom').value) || 5;
   }
   document.getElementById('setup-modal').style.display = 'none';
-  initLeaderboard(session, selectedTimer, selectedMatlab);
+  // Wait for module to expose initLeaderboard, then call it
+  function tryInit(attempts) {
+    if (typeof window.initLeaderboard === 'function') {
+      window.initLeaderboard(session, selectedTimer, selectedMatlab);
+    } else if (attempts > 0) {
+      setTimeout(() => tryInit(attempts - 1), 100);
+    } else {
+      alert('Error: leaderboard module not loaded. Please hard-refresh (Ctrl+Shift+R).');
+    }
+  }
+  tryInit(20);
 }
 
 // ══════════════════════════════════════════════════

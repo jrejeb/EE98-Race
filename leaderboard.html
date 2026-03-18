@@ -514,12 +514,6 @@ function playCandidateSound() {
   } catch(e) {}
 }
 
-function activatePortal() {
-  if (!window._currentSession) {
-    alert('Launch a session first before activating the portal.');
-    return;
-  }
-
 function copyStudentUrl() {
   const url = document.getElementById('student-url-text').textContent;
   navigator.clipboard.writeText(url).then(() => {

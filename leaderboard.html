@@ -265,8 +265,8 @@ header {
 <!-- ══════════════ MAIN LEADERBOARD ══════════════ -->
 <header>
   <div class="header-left">
-    <h1>🏁 EE98 — Race to the <span>Board</span></h1>
-    <p style="font-size:0.82rem; color:var(--muted); font-style:italic; margin-top:0.3rem; margin-bottom:0.4rem;">"Here We Learn By Doing!"</p>
+    <h1 style="font-size:clamp(2.4rem,4.5vw,3.8rem);">🏁 EE<span style="color:var(--red, #E74C3C);">98</span> — Race to the <span>Board</span> Tournament</h1>
+    <p style="font-size:1rem; color:#2ECC71; font-style:italic; font-family:'Syne',sans-serif; margin-top:0.35rem; margin-bottom:0.4rem;">(Here We Learn By Doing!)</p>
     <div class="sub">
       <div class="live-tag"><div class="pulse"></div>LIVE</div>
       <span class="sess-tag" id="sess-lbl">session: —</span>
@@ -277,6 +277,14 @@ header {
   <div class="header-right">
     <div class="count-big" id="total-count">0</div>
     <div class="count-lbl">submitted</div>
+    <button onclick="restartRace()" style="margin-top:0.5rem; background:transparent;
+      border:1px solid #2a2a2a; color:var(--muted); font-family:'DM Sans',sans-serif;
+      font-size:0.72rem; padding:0.35rem 0.8rem; border-radius:8px; cursor:pointer;
+      transition:border-color 0.2s,color 0.2s;"
+      onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'"
+      onmouseout="this.style.borderColor='#2a2a2a';this.style.color='var(--muted)'">
+      ↺ New race
+    </button>
   </div>
 </header>
 
@@ -381,6 +389,22 @@ function playFanfare() {
       o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + d + 0.05);
     });
   } catch(e) {}
+}
+
+function restartRace() {
+  if (!confirm('Start a new race? This will reset the current session display.')) return;
+  // Show setup modal again — instructor fills in new session
+  document.getElementById('setup-modal').style.display = 'flex';
+  // Reset leaderboard display
+  document.getElementById('winner-banner').style.display = 'none';
+  document.getElementById('entries-list').innerHTML =
+    '<div class="empty"><span class="ico">🏁</span>Waiting for submissions…</div>';
+  document.getElementById('sol-panel').style.display = 'none';
+  document.getElementById('mg').classList.remove('has-sol');
+  document.getElementById('vote-results').style.display = 'none';
+  document.getElementById('total-count').textContent = '0';
+  // Unsubscribe old Firebase listeners by reloading
+  window.location.reload();
 }
 </script>
 

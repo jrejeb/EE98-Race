@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EE98 — Race to the Board · Portal</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --gold: #F5C842; --green: #2ECC71; --red: #E74C3C;
+  --dark: #090909; --card: #131313; --border: #222;
+  --text: #EFEFEF; --muted: #555;
+}
+body {
+  background: var(--dark); color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 2rem 1.5rem;
+  background-image:
+    radial-gradient(ellipse at 15% 20%, rgba(245,200,66,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 80%, rgba(46,204,113,0.04) 0%, transparent 50%);
+}
+.page { width: 100%; max-width: 560px; }
+
+.hero { text-align: center; margin-bottom: 2.5rem; }
+.ee98-tag {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.25);
+  color: var(--gold); font-family: 'DM Mono', monospace;
+  font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 0.3rem 0.9rem; border-radius: 100px; margin-bottom: 1.2rem;
+}
+.hero h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 900; color: #fff; line-height: 1; margin-bottom: 0.3rem;
+}
+.hero h1 .ee { color: var(--red); }
+.hero h1 .board { color: var(--gold); }
+.tagline { font-family:'Syne',sans-serif; font-size:0.9rem; color:var(--green); font-style:italic; margin-top:0.4rem; }
+
+.section-label {
+  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em;
+  color: var(--muted); margin-bottom: 0.7rem;
+  display: flex; align-items: center; gap: 0.6rem;
+}
+.section-label::after { content:''; flex:1; height:1px; background:var(--border); }
+
+#live-section { margin-bottom: 2rem; }
+#past-section { margin-bottom: 1.5rem; }
+
+/* Live button */
+.live-btn {
+  display: flex; align-items: center; gap: 1rem; width: 100%;
+  background: linear-gradient(135deg, rgba(245,200,66,0.12) 0%, rgba(245,200,66,0.04) 100%);
+  border: 1.5px solid rgba(245,200,66,0.5); border-radius: 16px;
+  padding: 1.3rem 1.5rem; text-decoration: none; color: inherit;
+  transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  animation: pb 2s ease-in-out infinite; cursor: pointer;
+}
+.live-btn:hover {
+  border-color: var(--gold); transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(245,200,66,0.12); animation: none;
+}
+.live-btn:active { transform: scale(0.98); }
+@keyframes pb { 0%,100%{border-color:rgba(245,200,66,0.5)} 50%{border-color:rgba(245,200,66,0.9)} }
+
+.dot-wrap {
+  flex-shrink:0; width:40px; height:40px;
+  background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.3);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+}
+.live-dot { width:12px; height:12px; background:var(--green); border-radius:50%; animation:lp 1.2s ease-in-out infinite; }
+@keyframes lp { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(0.7)} }
+
+.btn-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--green); font-family:'DM Mono',monospace; margin-bottom:0.2rem; }
+.btn-name  { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; color:#fff; }
+.btn-sub   { font-size:0.75rem; color:var(--muted); margin-top:0.15rem; font-family:'DM Mono',monospace; }
+.btn-arrow { font-size:1.4rem; color:var(--gold); flex-shrink:0; }
+
+/* No live */
+.no-live {
+  background:var(--card); border:1px solid var(--border); border-radius:16px;
+  padding:2rem; text-align:center; color:var(--muted);
+}
+.no-live .icon { font-size:2rem; margin-bottom:0.6rem; opacity:0.3; display:block; }
+.no-live p { font-size:0.85rem; line-height:1.6; }
+
+/* Past list */
+.past-list { display:flex; flex-direction:column; gap:0.4rem; }
+.past-item {
+  display:flex; align-items:center; gap:0.8rem;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:10px; padding:0.7rem 1rem; opacity:0.4;
+}
+.past-dot { width:7px; height:7px; background:var(--muted); border-radius:50%; flex-shrink:0; }
+.past-name { font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--muted); flex:1; }
+.past-time { font-family:'DM Mono',monospace; font-size:0.7rem; color:#333; }
+.no-past   { font-size:0.8rem; color:#2a2a2a; text-align:center; padding:0.5rem; }
+
+.rules-link {
+  display:block; text-align:center; font-size:0.78rem;
+  color:var(--muted); text-decoration:none; margin-top:1rem; transition:color 0.2s;
+}
+.rules-link:hover { color:var(--gold); }
+.refresh-note { text-align:center; margin-top:1.2rem; font-size:0.68rem; color:#252525; font-family:'DM Mono',monospace; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <div class="ee98-tag">🏁 EE98</div>
+    <h1><span class="ee">EE</span>98 — Race to the <span class="board">Board</span> Tournament</h1>
+    <p class="tagline">(Here We Learn By Doing!)</p>
+  </div>
+
+  <div id="live-section">
+    <div class="section-label">🟢 Live now</div>
+    <div id="live-container">
+      <div class="no-live"><span class="icon">⏳</span><p>No race is live right now.<br>Your instructor will activate the next session.</p></div>
+    </div>
+  </div>
+
+  <div id="past-section">
+    <div class="section-label">Past sessions</div>
+    <div class="past-list" id="past-list">
+      <div class="no-past">No past sessions yet.</div>
+    </div>
+  </div>
+
+  <a href="rules.html" class="rules-link">📋 Race rules &amp; eligibility</a>
+  <p class="refresh-note">Updates automatically · bookmark this URL for the whole semester</p>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyBXMat27V4YU7U79FAjekIRF49pK_stn18",
+    authDomain:        "ee98-race.firebaseapp.com",
+    databaseURL:       "https://ee98-race-default-rtdb.firebaseio.com",
+    projectId:         "ee98-race",
+    storageBucket:     "ee98-race.firebasestorage.app",
+    messagingSenderId: "1082290560398",
+    appId:             "1:1082290560398:web:d1c3671c2122322de5d8df"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getDatabase(app);
+
+  function fmtDate(ts) {
+    return new Date(ts).toLocaleDateString('en-US',
+      { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:false });
+  }
+
+  onValue(ref(db, 'portal'), snap => {
+    const data          = snap.exists() ? snap.val() : {};
+    const liveSession   = data.live         || null;
+    const liveSettings  = data.liveSettings || {};
+    const pastSessions  = data.past ? Object.values(data.past) : [];
+
+    // Live section
+    const liveContainer = document.getElementById('live-container');
+    if (liveSession) {
+      const base = window.location.href.replace('portal.html','').replace(/\?.*$/,'');
+      const url  = base + 'winner.html?session=' + encodeURIComponent(liveSession);
+      const matlabText = liveSettings.matlabRequired ? '· MATLAB required' : '· MATLAB optional';
+      liveContainer.innerHTML = `
+        <a href="${url}" class="live-btn">
+          <div class="dot-wrap"><div class="live-dot"></div></div>
+          <div style="flex:1">
+            <div class="btn-label">● Live — tap to join</div>
+            <div class="btn-name">${liveSession}</div>
+            <div class="btn-sub">${matlabText}</div>
+          </div>
+          <div class="btn-arrow">→</div>
+        </a>`;
+    } else {
+      liveContainer.innerHTML = `
+        <div class="no-live">
+          <span class="icon">⏳</span>
+          <p>No race is live right now.<br>Your instructor will activate the next session.</p>
+        </div>`;
+    }
+
+    // Past sessions
+    const pastList = document.getElementById('past-list');
+    const sorted   = pastSessions.sort((a,b) => (b.archivedAt||0) - (a.archivedAt||0));
+    if (sorted.length === 0) {
+      pastList.innerHTML = '<div class="no-past">No past sessions yet.</div>';
+    } else {
+      pastList.innerHTML = sorted.map(s => `
+        <div class="past-item">
+          <div class="past-dot"></div>
+          <div class="past-name">${s.name}</div>
+          <div class="past-time">${s.archivedAt ? fmtDate(s.archivedAt) : '—'}</div>
+        </div>`).join('');
+    }
+  });
+</script>
+</body>
+</html>

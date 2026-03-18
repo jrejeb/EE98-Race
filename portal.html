@@ -138,7 +138,7 @@ body {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue }
+  import { getDatabase, ref, onValue, set }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -153,6 +153,17 @@ body {
 
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
+
+  window._clearLive = async () => {
+    // Read past sessions, then rewrite portal without live key
+    const { get: fbGet } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+    const pastSnap = await fbGet(ref(db, 'portal/past'));
+    if (pastSnap.exists()) {
+      await set(ref(db, 'portal'), { past: pastSnap.val() });
+    } else {
+      await set(ref(db, 'portal'), null);
+    }
+  };
 
   function fmtDate(ts) {
     return new Date(ts).toLocaleDateString('en-US',
@@ -175,12 +186,15 @@ body {
         <a href="${url}" class="live-btn">
           <div class="dot-wrap"><div class="live-dot"></div></div>
           <div style="flex:1">
-            <div class="btn-label">● Live — tap to join</div>
-            <div class="btn-name">${liveSession}</div>
-            <div class="btn-sub">${matlabText}</div>
+            <div class="btn-label">● Race is live — tap to join now</div>
+            <div class="btn-name">📋 Session: <span style="color:var(--gold)">${liveSession}</span></div>
+            <div class="btn-sub" style="margin-top:0.3rem;">${matlabText} &nbsp;·&nbsp; Tap → to enter your racing name &amp; solution</div>
           </div>
           <div class="btn-arrow">→</div>
-        </a>`;
+        </a>
+        <p style="text-align:center; font-size:0.72rem; color:var(--muted); margin-top:0.6rem; font-family:'DM Mono',monospace;">
+          → winner.html?session=${liveSession}
+        </p>`;
     } else {
       liveContainer.innerHTML = `
         <div class="no-live">
@@ -203,6 +217,25 @@ body {
         </div>`).join('');
     }
   });
+  // Auto-refresh every 30s as cache fallback
+  setTimeout(() => window.location.reload(), 30000);
+
+  // Hidden instructor override: triple-click EE98 title to clear live session
+  let clickCount = 0, clickTimer;
+  document.querySelector('.hero h1').addEventListener('click', async () => {
+    clickCount++;
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(() => clickCount = 0, 800);
+    if (clickCount >= 3) {
+      clickCount = 0;
+      const pwd = prompt('Instructor code:');
+      if (pwd === 'rejeb98') {
+        await window._clearLive();
+        alert('Live session cleared.');
+      }
+    }
+  });
+  document.querySelector('.hero h1').style.cursor = 'default';
 </script>
 </body>
 </html>

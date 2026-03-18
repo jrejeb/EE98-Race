@@ -470,17 +470,17 @@ async function deleteEntry(key, subPath) {
 
 async function newRaceAndArchive() {
   const session = window._currentSession;
-  const msg = session
-    ? 'Archive session "' + session + '" and start a new race?
-This clears all current data.'
-    : 'Start a new race?';
+  const msg = session ? 'Archive "' + session + '" and start a new race?' : 'Start a new race?';
   if (!confirm(msg)) return;
   if (session) {
-    // Archive to portal/past
-    await window._fbPush('portal/past', { name: session, archivedAt: Date.now() });
-    await window._fbSet('portal/live', null);
-    await window._fbSet('portal/liveSettings', null);
-    // Clear session data
+    // Read existing past list before rewriting portal
+    const { get: fbGet } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+    const pastSnap = await fbGet(window._dbRef('portal/past'));
+    const existingPast = pastSnap.exists() ? pastSnap.val() : {};
+    existingPast['sess_' + Date.now()] = { name: session, archivedAt: Date.now() };
+    // Wipe entire portal node — writes past only, no live key
+    await window._fbSet('portal', { past: existingPast });
+    // Clear session race data
     await window._fbRemove('sessions/' + session + '/submissions');
     await window._fbRemove('sessions/' + session + '/solution');
     await window._fbRemove('sessions/' + session + '/votes');
@@ -493,9 +493,15 @@ async function activateSession() {
   if (!session) { alert('Launch a session first using the popup.'); return; }
   const btn = document.getElementById('activate-btn');
   btn.textContent = 'Activating…'; btn.disabled = true;
-  // Write to portal node — portal.html listens here
-  await window._fbSet('portal/live', session);
-  await window._fbSet('portal/liveSettings', { matlabRequired: window._matlabReq || false });
+  // Read existing past sessions, then write full portal node with live
+  const { get: fbGet } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
+  const pastSnap = await fbGet(window._dbRef('portal/past'));
+  const portalData = {
+    live: session,
+    liveSettings: { matlabRequired: window._matlabReq || false }
+  };
+  if (pastSnap.exists()) portalData.past = pastSnap.val();
+  await window._fbSet('portal', portalData);
   btn.textContent = '✓ Live on portal!';
   btn.style.background = 'rgba(46,204,113,0.25)';
 }

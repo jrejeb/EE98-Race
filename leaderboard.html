@@ -429,43 +429,10 @@ function activatePortal() {
     alert('Launch a session first before activating the portal.');
     return;
   }
-  // Write active session to Firebase portal node
-  import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js').then(({ ref, set, getDatabase }) => {
-    const db2 = getDatabase();
-    set(ref(db2, 'portal/activeSession'), window._currentSession).then(() => {
-      const btn = document.getElementById('activate-btn');
-      btn.textContent = '✓ Portal live!';
-      btn.style.background = 'rgba(46,204,113,0.2)';
-      setTimeout(() => { btn.textContent = '▶ Activate portal'; btn.style.background = 'rgba(46,204,113,0.12)'; }, 3000);
-    });
-  });
-}
-
-function resetPortal() {
-  if (!window._currentSession) return;
-  if (!confirm('End the race and archive session "' + window._currentSession + '" on the portal?')) return;
-  import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js').then(({ ref, set, remove, getDatabase }) => {
-    const db2 = getDatabase();
-    const sess = window._currentSession;
-    // Archive to history
-    set(ref(db2, 'portal/history/' + sess.replace(/[^a-zA-Z0-9_-]/g,'_')), {
-      key: sess,
-      archivedAt: Date.now()
-    }).then(() => {
-      // Clear active session
-      return remove(ref(db2, 'portal/activeSession'));
-    }).then(() => {
-      const btn = document.getElementById('reset-btn');
-      btn.textContent = '✓ Archived!';
-      setTimeout(() => { btn.textContent = '⏹ End race'; }, 3000);
-    });
-  });
-}
 
 async function deleteEntry(key, subPath) {
   if (!confirm('Remove this entry? The next person will become winner/candidate.')) return;
-  const { remove: fbRemove } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
-  await fbRemove(window._dbRef(subPath + '/' + key));
+  await window._fbRemove(subPath + '/' + key);
 }
 
 async function newRaceAndArchive() {
@@ -474,9 +441,7 @@ async function newRaceAndArchive() {
   if (!confirm(msg)) return;
   if (session) {
     // Read existing past list before rewriting portal
-    const { get: fbGet } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
-    const pastSnap = await fbGet(window._dbRef('portal/past'));
-    const existingPast = pastSnap.exists() ? pastSnap.val() : {};
+    const existingPast = await window._fbGet('portal/past') || {};
     existingPast['sess_' + Date.now()] = { name: session, archivedAt: Date.now() };
     // Wipe entire portal node — writes past only, no live key
     await window._fbSet('portal', { past: existingPast });
@@ -494,13 +459,12 @@ async function activateSession() {
   const btn = document.getElementById('activate-btn');
   btn.textContent = 'Activating…'; btn.disabled = true;
   // Read existing past sessions, then write full portal node with live
-  const { get: fbGet } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
-  const pastSnap = await fbGet(window._dbRef('portal/past'));
+  const existingPast = await window._fbGet('portal/past');
   const portalData = {
     live: session,
     liveSettings: { matlabRequired: window._matlabReq || false }
   };
-  if (pastSnap.exists()) portalData.past = pastSnap.val();
+  if (existingPast) portalData.past = existingPast;
   await window._fbSet('portal', portalData);
   btn.textContent = '✓ Live on portal!';
   btn.style.background = 'rgba(46,204,113,0.25)';
@@ -559,7 +523,7 @@ function restartRace() {
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set, remove, query, orderByChild }
+  import { getDatabase, ref, onValue, set, remove, push, get, query, orderByChild }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -606,11 +570,10 @@ function restartRace() {
     window._fbRemove = async (path)      => remove(ref(db, path));
     window._fbPush   = async (path, val) => push(ref(db, path), val);
     window._dbRef    = (path)            => ref(db, path);
-    window._fbGet    = async (path) => {
-      const { get: fbGet } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js");
-      const s = await fbGet(ref(db, path)); return s.exists() ? s.val() : null;
+    window._fbGet    = async (path)      => {
+      const s = await get(ref(db, path));
+      return s.exists() ? s.val() : null;
     };
-
     // Show student URL bar with correct session
     const studentUrl = window.location.origin + window.location.pathname.replace('leaderboard.html','winner.html') + '?session=' + session;
     document.getElementById('student-url-text').textContent = studentUrl;

@@ -285,6 +285,13 @@ header {
         title="Make this session visible to students on portal.html">
         📡 Activate on portal
       </button>
+      <button id="stop-btn" onclick="stopRace()"
+        style="background:rgba(231,76,60,0.12); border:1px solid rgba(231,76,60,0.3);
+        color:var(--red); font-family:'DM Sans',sans-serif; font-size:0.72rem;
+        padding:0.35rem 0.8rem; border-radius:8px; cursor:pointer; transition:all 0.2s;"
+        title="Stop the race — freeze submissions and voting">
+        ⏹ Stop race
+      </button>
       <button onclick="newRaceAndArchive()"
         style="background:transparent; border:1px solid #2a2a2a; color:var(--muted);
         font-family:'DM Sans',sans-serif; font-size:0.72rem;
@@ -538,6 +545,25 @@ function copyStudentUrl() {
   });
 }
 
+function stopRace() {
+  if (!confirm('Stop the race? Students will no longer be able to submit or vote.')) return;
+  window._raceStopped = true;
+  const btn = document.getElementById('stop-btn');
+  btn.textContent = '⏹ Race stopped';
+  btn.disabled = true;
+  btn.style.background = 'rgba(85,85,85,0.2)';
+  btn.style.color = 'var(--muted)';
+  btn.style.borderColor = '#333';
+  // Hide candidate list, hide student link bar — show only winner + vote results
+  document.getElementById('student-url-bar').style.display = 'none';
+  const list = document.getElementById('entries-list');
+  list.innerHTML = '<div class="empty" style="font-size:0.8rem; color:var(--muted); padding:0.8rem;">Race closed — submissions locked.</div>';
+  // Write stopped flag to Firebase so winner.html can read it
+  if (typeof window.activateSession === 'function' && window._currentSession) {
+    window._fbStopRace && window._fbStopRace();
+  }
+}
+
 function restartRace() {
   if (!confirm('Start a new race? This will reset the current session display.')) return;
   // Show setup modal again — instructor fills in new session
@@ -637,6 +663,9 @@ function restartRace() {
     });
 
     window._matlabReq = matlabReq;
+    window._fbStopRace = async () => {
+      await set(ref(db, `sessions/${session}/settings/stopped`), true);
+    };
 
     // Expose Firebase helpers for activate/reset buttons
 
@@ -655,10 +684,14 @@ function restartRace() {
 
     // ── SUBMISSIONS (single listener handles everything) ──
     let currentWinnerKey = null; // track by key, not name
+    let raceStopped = false;
 
-    onValue(query(ref(db, subPath), orderByChild('timestamp')), snap => {
+    onValue(ref(db, subPath), snap => {
       const all = [];
-      if (snap.exists()) snap.forEach(c => all.push({...c.val(), _key: c.key}));
+      if (snap.exists()) snap.forEach(c => {
+        const v = c.val();
+        if (v && v.name && v.timestamp) all.push({...v, _key: c.key});
+      });
       all.sort((a,b) => a.timestamp - b.timestamp);
       document.getElementById('total-count').textContent = all.length;
 

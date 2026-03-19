@@ -176,14 +176,14 @@ header {
 
 /* ── LIST ── */
 .list-hdr {
-  display: grid; grid-template-columns: 40px 1fr 110px 62px 55px;
+  display: grid; grid-template-columns: 120px 1fr 110px 62px 40px;
   gap: 0.4rem; padding: 0 0.65rem 0.45rem;
   font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em;
   color: var(--muted); border-bottom: 1px solid var(--border); margin-bottom: 0.4rem;
 }
 #entries-list { display: flex; flex-direction: column; gap: 0.28rem; max-height: 52vh; overflow-y: auto; }
 .entry {
-  display: grid; grid-template-columns: 40px 1fr 110px 62px 55px;
+  display: grid; grid-template-columns: 120px 1fr 110px 62px 40px;
   gap: 0.4rem; align-items: center;
   background: var(--card); border: 1px solid var(--border);
   border-radius: 10px; padding: 0.55rem 0.65rem;
@@ -338,7 +338,7 @@ header {
 <div id="mg">
   <div>
     <div class="list-hdr">
-      <div>Rank</div><div>Racing name</div><div>Time</div><div>Points</div><div>👍/👎</div>
+      <div>Candidate</div><div>Racing name</div><div>Time</div><div>Points</div><div></div>
     </div>
     <div id="entries-list">
       <div class="empty"><span class="ico">🏁</span>Waiting for submissions…</div>
@@ -710,20 +710,27 @@ function restartRace() {
         return;
       }
 
+      // Store subPath on window so deleteEntry onclick can access it
+      window._subPath = subPath;
+
       list.innerHTML = candidates.map((e, i) => {
-        const label = candLabels[i] || ('Participant #' + (i+1));
+        const label = candLabels[i] || ('Participant #' + (i + 1));
         const cls   = RC[i] || '';
-        return `<div class="entry ${cls}" style="grid-template-columns:1fr auto auto auto;">
-          <div class="ename" style="grid-column:1;">
-            <span style="font-size:0.65rem;color:var(--muted);display:block;margin-bottom:0.1rem;">${label}</span>
+        return `<div class="entry ${cls}">
+          <div class="rnum" style="font-size:0.6rem; color:var(--muted); text-align:left; line-height:1.3;">
+            ${label.replace('Champion ','')}
+          </div>
+          <div class="ename">
             <span style="font-weight:600;">${e.name}</span>
           </div>
           <div class="etime">${fmt(e.timestamp)}</div>
           <div><span class="pill">5 pts</span></div>
-          <button onclick="deleteEntry('${e._key}','${subPath}')"
-            style="background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.25);
-            color:var(--red); font-size:0.7rem; padding:0.2rem 0.5rem;
-            border-radius:6px; cursor:pointer; line-height:1;">❌</button>
+          <div>
+            <button onclick="deleteEntry('${e._key}', window._subPath)"
+              style="background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.25);
+              color:var(--red); font-size:0.7rem; padding:0.2rem 0.5rem;
+              border-radius:6px; cursor:pointer; line-height:1;">❌</button>
+          </div>
         </div>`;
       }).join('');
     });

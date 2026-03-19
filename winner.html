@@ -237,8 +237,7 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
   <!-- VOTING for winner (they vote too) -->
   <div class="vote-section" id="winner-vote-section">
     <h3>🗳️ Rate your own helpfulness</h3>
-    <p class="vnote">Even as winner, you participate in the vote. Results are shown publicly.</p>
-    <div class="vote-timer" id="winner-vote-timer">Vote closes in 5:00</div>
+    <p class="vnote">Even as winner, you participate in the vote. Results shown live on the leaderboard.</p>
     <div class="vote-btns">
       <button class="vote-btn" id="wv-yes" onclick="castVote('yes','winner')">👍 &nbsp; Helpful</button>
       <button class="vote-btn" id="wv-no"  onclick="castVote('no','winner')">👎 &nbsp; Not helpful</button>
@@ -267,8 +266,7 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
   <!-- VOTING for regular participants -->
   <div class="vote-section" id="regular-vote-section">
     <h3>🗳️ Was the winner's solution helpful?</h3>
-    <p class="vnote" id="vote-note-text">Vote now — you have 5 minutes from your submission.</p>
-    <div class="vote-timer" id="regular-vote-timer">Vote closes in 5:00</div>
+    <p class="vnote" id="vote-note-text">Cast your vote below — results are shown live on the leaderboard screen.</p>
     <div class="vote-btns">
       <button class="vote-btn" id="rv-yes" onclick="castVote('yes','regular')">👍 &nbsp; Helpful</button>
       <button class="vote-btn" id="rv-no"  onclick="castVote('no','regular')">👎 &nbsp; Not helpful</button>
@@ -408,9 +406,10 @@ function playFanfare() {
     const snap = await get(query(ref(db, subPath), orderByChild('timestamp')));
     const rank = snap.exists() ? Object.keys(snap.val()).length + 1 : 1;
 
-    await push(ref(db, subPath), { name, timestamp, rank, hasMatlab: !!code });
+    // Store matlabCode in submission so leaderboard can show it if this person becomes winner later
+    await push(ref(db, subPath), { name, timestamp, rank, hasMatlab: !!code, matlabCode: code || '' });
 
-    // If winner AND has code, post solution immediately — no second step needed
+    // If winner AND has code, post solution immediately
     if (rank === 1 && code) {
       await set(ref(db, solPath), { code, postedBy: name, postedAt: timestamp });
     }
@@ -446,12 +445,7 @@ function playFanfare() {
       if (el) el.textContent = matlabLabel;
     });
 
-    // Calculate remaining vote time based on submission timestamp
-    // (handles late joiners who submit close to deadline)
-    const elapsedSeconds = Math.floor((Date.now() - timestamp) / 1000);
-    const totalSeconds   = voteMin * 60;
-    const remainingVote  = Math.max(0, totalSeconds - elapsedSeconds);
-    startVoteCountdown(rank, remainingVote);
+    // Vote is open — no timer shown on student side, timer shown on leaderboard only
   };
 
   // ── POST SOLUTION (winner) ──
@@ -483,10 +477,11 @@ function playFanfare() {
 
   // ── VOTE COUNTDOWN ──
   function startVoteCountdown(rank, remainingSeconds) {
-    const timerId = rank === 1 ? 'winner-vote-timer' : 'regular-vote-timer';
+    // Timer no longer displayed on student side — just disable buttons when time is up
     const yesId   = rank === 1 ? 'wv-yes' : 'rv-yes';
     const noId    = rank === 1 ? 'wv-no'  : 'rv-no';
-    let remaining = remainingSeconds || 300; // fallback 5 min
+    let remaining = remainingSeconds || 300;
+    const timerId = '_unused'; // kept for compatibility
 
     // Check if no winner solution needed — show different note
     if (rank !== 1) {

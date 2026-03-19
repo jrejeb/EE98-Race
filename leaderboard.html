@@ -344,7 +344,13 @@ header {
       <div class="empty"><span class="ico">🏁</span>Waiting for submissions…</div>
     </div>
     <div id="vote-results">
-      <div class="vr-title">🗳️ Helpfulness vote — live results</div>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.4rem;">
+        <div class="vr-title" style="margin-bottom:0;">🗳️ Helpfulness vote</div>
+        <div style="display:flex; align-items:center; gap:0.8rem;">
+          <span id="vote-count-lbl" style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--muted);">0 voted</span>
+          <span id="vote-countdown" style="font-family:'DM Mono',monospace; font-size:0.72rem; color:var(--gold); background:rgba(245,200,66,0.08); border:1px solid rgba(245,200,66,0.2); padding:0.15rem 0.5rem; border-radius:6px;">—</span>
+        </div>
+      </div>
       <div class="vb-wrap">
         <div class="vb-label"><span>👍 Helpful</span><span id="yes-pct">0%</span></div>
         <div class="vb-track"><div class="vb-fill y" id="yes-bar" style="width:0%"></div></div>
@@ -723,36 +729,69 @@ function restartRace() {
       document.getElementById('sp-code').textContent = code;
     });
 
-    // When submissions change, check if winner changed and update solution panel
+    // When winner changes → update solution panel immediately
     onValue(query(ref(db, subPath), orderByChild('timestamp')), snap => {
-      if (!snap.exists()) return;
+      if (!snap.exists()) { currentWinnerName = null; return; }
       const all = [];
       snap.forEach(c => all.push({...c.val(), _key: c.key}));
       all.sort((a,b) => a.timestamp - b.timestamp);
-      if (all.length === 0) return;
-      const newWinner = all[0].name;
+      if (all.length === 0) { currentWinnerName = null; return; }
+      const newWinnerEntry = all[0];
+      const newWinner = newWinnerEntry.name;
+
       if (currentWinnerName !== null && currentWinnerName !== newWinner) {
-        // Winner changed — check if new winner has a solution, clear old one
-        get(ref(db, `sessions/${session}/submissions`)).then(() => {
-          // Look for new winner's submitted code in their submission
-          const newWinnerEntry = all[0];
-          if (!newWinnerEntry.hasMatlab) {
-            // New winner has no code — clear solution panel
-            set(ref(db, solPath), null);
-          }
-          // If they have code it was already posted on submit — nothing to do
-        });
+        // Winner removed — update solution panel for new winner
+        if (newWinnerEntry.hasMatlab && newWinnerEntry.matlabCode) {
+          // New winner submitted code — post it
+          set(ref(db, solPath), {
+            code:     newWinnerEntry.matlabCode,
+            postedBy: newWinner,
+            postedAt: Date.now()
+          });
+        } else {
+          // New winner has no code — clear panel
+          set(ref(db, solPath), null);
+        }
       }
       currentWinnerName = newWinner;
     });
 
     // ── VOTES ──
+    let voteCountdownInterval = null;
+    let voteDeadlineTs = null;
+
     onValue(ref(db, votePath), snap => {
-      let yes=0, no=0;
-      if (snap.exists()) snap.forEach(c => c.val().vote==='yes' ? yes++ : no++);
+      let yes=0, no=0, firstTs=Infinity;
+      if (snap.exists()) snap.forEach(c => {
+        c.val().vote==='yes' ? yes++ : no++;
+        if (c.val().ts && c.val().ts < firstTs) firstTs = c.val().ts;
+      });
       const total = yes+no;
       if (!total) return;
+
       document.getElementById('vote-results').style.display='block';
+
+      // Vote count label — also show total participants
+      document.getElementById('vote-count-lbl').textContent = total + ' voted';
+
+      // Start vote countdown from first vote timestamp
+      if (!voteCountdownInterval && firstTs !== Infinity) {
+        voteDeadlineTs = firstTs + voteMin * 60 * 1000;
+        voteCountdownInterval = setInterval(() => {
+          const rem = Math.max(0, voteDeadlineTs - Date.now());
+          const m   = Math.floor(rem / 60000).toString().padStart(2,'0');
+          const s   = Math.floor((rem % 60000) / 1000).toString().padStart(2,'0');
+          const el  = document.getElementById('vote-countdown');
+          if (rem === 0) {
+            el.textContent = 'Closed';
+            el.style.color = 'var(--muted)';
+            clearInterval(voteCountdownInterval);
+          } else {
+            el.textContent = m + ':' + s + ' left';
+          }
+        }, 1000);
+      }
+
       const yp = Math.round(yes/total*100), np = 100-yp;
       document.getElementById('yes-pct').textContent = yp+'%';
       document.getElementById('no-pct').textContent  = np+'%';

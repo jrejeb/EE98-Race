@@ -653,39 +653,52 @@ function restartRace() {
     const solPath  = `sessions/${session}/solution`;
     const votePath = `sessions/${session}/votes`;
 
-    // ── SUBMISSIONS ──
+    // ── SUBMISSIONS (single listener handles everything) ──
+    let currentWinnerKey = null; // track by key, not name
+
     onValue(query(ref(db, subPath), orderByChild('timestamp')), snap => {
-      const all = []; const keys = [];
-      if (snap.exists()) snap.forEach(c => { all.push({...c.val(), _key: c.key}); keys.push(c.key); });
+      const all = [];
+      if (snap.exists()) snap.forEach(c => all.push({...c.val(), _key: c.key}));
       all.sort((a,b) => a.timestamp - b.timestamp);
       document.getElementById('total-count').textContent = all.length;
 
-      // Winner = first submission
+      // ── Winner banner ──
       if (all.length > 0) {
-        const w = all[0]; winnerName = w.name;
+        const w = all[0];
+        winnerName = w.name;
         document.getElementById('winner-banner').style.display = 'block';
         document.getElementById('wb-name').textContent  = w.name;
         document.getElementById('wb-name2').textContent = w.name;
         document.getElementById('wb-time').textContent  = fmt(w.timestamp);
-        // Delete winner button
-        document.getElementById('wb-delete').onclick = () => deleteEntry(w._key, subPath);
+        document.getElementById('wb-delete').onclick    = () => deleteEntry(w._key, subPath);
         document.getElementById('wb-delete').style.display = 'inline-block';
         if (!winnerSeen) { winnerSeen = true; playWinnerMusic(); }
+
+        // ── Winner changed? Update solution panel ──
+        if (currentWinnerKey !== null && currentWinnerKey !== w._key) {
+          // New winner after removal — post their code or clear
+          if (w.hasMatlab && w.matlabCode) {
+            set(ref(db, solPath), { code: w.matlabCode, postedBy: w.name, postedAt: Date.now() });
+          } else {
+            set(ref(db, solPath), null);
+          }
+        }
+        currentWinnerKey = w._key;
+
       } else {
         document.getElementById('winner-banner').style.display = 'none';
         document.getElementById('wb-delete').style.display = 'none';
         winnerSeen = false;
+        currentWinnerKey = null;
+        set(ref(db, solPath), null); // clear solution when no winner
       }
 
-      // List = candidates (everyone except winner, max shown with labels)
+      // ── Candidate list ──
       const candidates = all.slice(1);
       const list = document.getElementById('entries-list');
       const candLabels = ['Champion Candidate #1','Champion Candidate #2','Champion Candidate #3'];
 
-      // Play candidate sound when new candidate arrives (not first winner)
-      if (all.length > 1 && candidates.length > window._prevCandCount) {
-        playCandidateSound();
-      }
+      if (all.length > 1 && candidates.length > window._prevCandCount) playCandidateSound();
       window._prevCandCount = candidates.length;
 
       if (all.length === 0) {
@@ -715,10 +728,7 @@ function restartRace() {
       }).join('');
     });
 
-    // ── SOLUTION ──
-    // Track current winner to detect changes
-    let currentWinnerName = null;
-
+    // ── SOLUTION DISPLAY ──
     onValue(ref(db, solPath), snap => {
       const p = document.getElementById('sol-panel');
       const g = document.getElementById('mg');
@@ -727,33 +737,6 @@ function restartRace() {
       p.style.display='block'; g.classList.add('has-sol');
       document.getElementById('sp-by').textContent   = 'posted by ' + (postedBy || winnerName);
       document.getElementById('sp-code').textContent = code;
-    });
-
-    // When winner changes → update solution panel immediately
-    onValue(query(ref(db, subPath), orderByChild('timestamp')), snap => {
-      if (!snap.exists()) { currentWinnerName = null; return; }
-      const all = [];
-      snap.forEach(c => all.push({...c.val(), _key: c.key}));
-      all.sort((a,b) => a.timestamp - b.timestamp);
-      if (all.length === 0) { currentWinnerName = null; return; }
-      const newWinnerEntry = all[0];
-      const newWinner = newWinnerEntry.name;
-
-      if (currentWinnerName !== null && currentWinnerName !== newWinner) {
-        // Winner removed — update solution panel for new winner
-        if (newWinnerEntry.hasMatlab && newWinnerEntry.matlabCode) {
-          // New winner submitted code — post it
-          set(ref(db, solPath), {
-            code:     newWinnerEntry.matlabCode,
-            postedBy: newWinner,
-            postedAt: Date.now()
-          });
-        } else {
-          // New winner has no code — clear panel
-          set(ref(db, solPath), null);
-        }
-      }
-      currentWinnerName = newWinner;
     });
 
     // ── VOTES ──

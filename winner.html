@@ -237,7 +237,12 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
   <!-- VOTING for winner (they vote too) -->
   <div class="vote-section" id="winner-vote-section">
     <h3>🗳️ Rate your own helpfulness</h3>
-    <p class="vnote">Vote after you present your solution at the board. Results shown live on the leaderboard.</p>
+    <p style="background-color:#fffacd; border-left:4px solid #ffd700;
+      padding:0.75rem 1rem; border-radius:0 8px 8px 0; font-size:0.88rem;
+      color:#7a6000; line-height:1.6; margin-bottom:0.9rem;">
+      ⚠️ <strong>Present your solution first!</strong> Vote only after you finish
+      at the board. Professor Rejeb will confirm when voting is open.
+    </p>
     <div class="vote-btns">
       <button class="vote-btn" id="wv-yes" onclick="castVote('yes','winner')">👍 &nbsp; Helpful</button>
       <button class="vote-btn" id="wv-no"  onclick="castVote('no','winner')">👎 &nbsp; Not helpful</button>
@@ -266,7 +271,13 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
   <!-- VOTING for regular participants -->
   <div class="vote-section" id="regular-vote-section">
     <h3>🗳️ Was the winner's solution helpful?</h3>
-    <p class="vnote" id="vote-note-text">Vote <strong>after</strong> the winner presents at the board. Results are shown live on the leaderboard screen.</p>
+    <p id="vote-note-text" style="background-color:#fffacd; border-left:4px solid #ffd700;
+      padding:0.75rem 1rem; border-radius:0 8px 8px 0; font-size:0.88rem;
+      color:#7a6000; line-height:1.6; margin-bottom:0.9rem;">
+      ⚠️ <strong>Do not vote yet!</strong> Wait until the winner finishes presenting
+      at the board. If you vote early and the winner is replaced, <strong>your vote
+      will be lost</strong> and you will need to vote again.
+    </p>
     <div class="vote-btns">
       <button class="vote-btn" id="rv-yes" onclick="castVote('yes','regular')">👍 &nbsp; Helpful</button>
       <button class="vote-btn" id="rv-no"  onclick="castVote('no','regular')">👎 &nbsp; Not helpful</button>

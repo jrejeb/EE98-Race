@@ -682,6 +682,10 @@ function restartRace() {
     const solPath  = `sessions/${session}/solution`;
     const votePath = `sessions/${session}/votes`;
 
+    // ── VOTE STATE (hoisted so winner-change logic can reset them) ──
+    let voteCountdownInterval = null;
+    let voteDeadlineTs = null;
+
     // ── SUBMISSIONS (single listener handles everything) ──
     let currentWinnerKey = null; // track by key, not name
     let raceStopped = false;
@@ -707,14 +711,24 @@ function restartRace() {
         document.getElementById('wb-delete').style.display = 'inline-block';
         if (!winnerSeen) { winnerSeen = true; playWinnerMusic(); }
 
-        // ── Winner changed? Update solution panel ──
+        // ── Winner changed? Reset solution + votes ──
         if (currentWinnerKey !== null && currentWinnerKey !== w._key) {
-          // New winner after removal — post their code or clear
+          // Clear old winner's solution and votes — new winner starts fresh
+          set(ref(db, solPath), null);
+          remove(ref(db, votePath));
+          // If new winner has code, post it
           if (w.hasMatlab && w.matlabCode) {
             set(ref(db, solPath), { code: w.matlabCode, postedBy: w.name, postedAt: Date.now() });
-          } else {
-            set(ref(db, solPath), null);
           }
+          // Reset vote UI
+          document.getElementById('vote-results').style.display = 'none';
+          document.getElementById('yes-bar').style.width = '0%';
+          document.getElementById('no-bar').style.width  = '0%';
+          document.getElementById('yes-pct').textContent = '0%';
+          document.getElementById('no-pct').textContent  = '0%';
+          document.getElementById('vote-count-lbl').textContent = '0 voted';
+          document.getElementById('vote-countdown').textContent = '—';
+          if (voteCountdownInterval) { clearInterval(voteCountdownInterval); voteCountdownInterval = null; voteDeadlineTs = null; }
         }
         currentWinnerKey = w._key;
 
@@ -722,8 +736,16 @@ function restartRace() {
         document.getElementById('winner-banner').style.display = 'none';
         document.getElementById('wb-delete').style.display = 'none';
         winnerSeen = false;
+        if (currentWinnerKey !== null) {
+          // Last winner was removed — clear everything
+          set(ref(db, solPath), null);
+          remove(ref(db, votePath));
+          document.getElementById('vote-results').style.display = 'none';
+          document.getElementById('vote-count-lbl').textContent = '0 voted';
+          document.getElementById('vote-countdown').textContent = '—';
+          if (voteCountdownInterval) { clearInterval(voteCountdownInterval); voteCountdownInterval = null; voteDeadlineTs = null; }
+        }
         currentWinnerKey = null;
-        set(ref(db, solPath), null); // clear solution when no winner
       }
 
       // ── Candidate list ──
@@ -778,10 +800,6 @@ function restartRace() {
       document.getElementById('sp-by').textContent   = 'posted by ' + (postedBy || winnerName);
       document.getElementById('sp-code').textContent = code;
     });
-
-    // ── VOTES ──
-    let voteCountdownInterval = null;
-    let voteDeadlineTs = null;
 
     onValue(ref(db, votePath), snap => {
       let yes=0, no=0, firstTs=Infinity;

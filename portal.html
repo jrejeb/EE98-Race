@@ -15,6 +15,7 @@
 body {
   background: var(--dark); color: var(--text);
   font-family: 'DM Sans', sans-serif;
+  font-size: 1.06rem;
   min-height: 100vh; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 2rem 1.5rem;
@@ -22,9 +23,28 @@ body {
     radial-gradient(ellipse at 15% 20%, rgba(245,200,66,0.06) 0%, transparent 50%),
     radial-gradient(ellipse at 85% 80%, rgba(46,204,113,0.04) 0%, transparent 50%);
 }
-.page { width: 100%; max-width: 560px; }
+.page { width: 100%; max-width: 640px; }
 
-.hero { text-align: center; margin-bottom: 2.5rem; }
+.hero { text-align: center; margin-bottom: 2rem; }
+.hero-welcome {
+  font-family: 'DM Sans', sans-serif; font-size: clamp(1rem, 2.8vw, 1.2rem);
+  font-weight: 600; font-style: italic; color: var(--blue); margin-bottom: 0.35rem;
+}
+.hero-contest-row {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  flex-wrap: wrap; margin: 0.5rem 0 0.35rem;
+}
+.hero-flag { font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1; }
+.hero-contest {
+  font-family: 'Syne', sans-serif; font-size: clamp(1.65rem, 5vw, 2.35rem);
+  font-weight: 900; font-style: italic; color: var(--gold);
+}
+.hero-subtitle {
+  font-family: 'Syne', sans-serif; font-size: clamp(1.2rem, 3.5vw, 1.65rem);
+  font-weight: 800; color: #fff; margin-bottom: 0.15rem;
+}
+.hero-subtitle .ee { color: var(--red); }
+.hero-subtitle .board { color: var(--gold); }
 .ee98-tag {
   display: inline-flex; align-items: center; gap: 0.4rem;
   background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.25);
@@ -34,29 +54,37 @@ body {
 }
 .hero h1 {
   font-family: 'Syne', sans-serif;
-  font-size: clamp(2rem, 6vw, 3rem);
-  font-weight: 900; color: #fff; line-height: 1; margin-bottom: 0.3rem;
+  font-size: clamp(2.15rem, 6.5vw, 3.25rem);
+  font-weight: 900; color: #fff; line-height: 1; margin-bottom: 0.35rem;
 }
 .hero h1 .ee { color: var(--red); }
 .hero h1 .board { color: var(--gold); }
-.tagline { font-family:'Syne',sans-serif; font-size:0.9rem; color:var(--green); font-style:italic; margin-top:0.4rem; }
+.tagline {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.15rem, 3.2vw, 1.55rem);
+  font-weight: 700;
+  color: var(--green);
+  font-style: italic;
+  margin-top: 0.55rem;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+}
 
 .section-label {
-  font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em;
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.15em;
   color: var(--muted); margin-bottom: 0.7rem;
   display: flex; align-items: center; gap: 0.6rem;
 }
 .section-label::after { content:''; flex:1; height:1px; background:var(--border); }
 
 #live-section { margin-bottom: 2rem; }
-#past-section { margin-bottom: 1.5rem; }
 
 /* Live button */
 .live-btn {
-  display: flex; align-items: center; gap: 1rem; width: 100%;
+  display: flex; align-items: stretch; gap: 1rem; width: 100%;
   background: linear-gradient(135deg, rgba(245,200,66,0.12) 0%, rgba(245,200,66,0.04) 100%);
   border: 1.5px solid rgba(245,200,66,0.5); border-radius: 16px;
-  padding: 1.3rem 1.5rem; text-decoration: none; color: inherit;
+  padding: 1.5rem 1.35rem 1.6rem; text-decoration: none; color: inherit;
   transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
   animation: pb 2s ease-in-out infinite; cursor: pointer;
 }
@@ -68,17 +96,46 @@ body {
 @keyframes pb { 0%,100%{border-color:rgba(245,200,66,0.5)} 50%{border-color:rgba(245,200,66,0.9)} }
 
 .dot-wrap {
-  flex-shrink:0; width:40px; height:40px;
+  flex-shrink:0; width:52px; height:52px; align-self:center;
   background:rgba(46,204,113,0.12); border:1px solid rgba(46,204,113,0.3);
   border-radius:50%; display:flex; align-items:center; justify-content:center;
 }
-.live-dot { width:12px; height:12px; background:var(--green); border-radius:50%; animation:lp 1.2s ease-in-out infinite; }
+.live-dot { width:14px; height:14px; background:var(--green); border-radius:50%; animation:lp 1.2s ease-in-out infinite; }
 @keyframes lp { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(0.7)} }
 
-.btn-label { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--green); font-family:'DM Mono',monospace; margin-bottom:0.2rem; }
-.btn-name  { font-family:'Syne',sans-serif; font-size:1.2rem; font-weight:800; color:#fff; }
-.btn-sub   { font-size:0.75rem; color:var(--muted); margin-top:0.15rem; font-family:'DM Mono',monospace; }
-.btn-arrow { font-size:1.4rem; color:var(--gold); flex-shrink:0; }
+.btn-label {
+  font-size: clamp(0.72rem, 2vw, 0.85rem); text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--green); font-family: 'DM Mono', monospace; margin-bottom: 0.45rem; font-weight: 700;
+}
+.btn-name  {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.35rem, 4.5vw, 1.85rem);
+  font-weight: 900; color: #fff; line-height: 1.2;
+}
+.btn-arrow { font-size: clamp(1.5rem, 4vw, 2rem); color: var(--gold); flex-shrink: 0; align-self: center; }
+
+.live-matlab {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.15rem, 3.8vw, 1.55rem);
+  font-weight: 800;
+  margin-top: 0.65rem; line-height: 1.35;
+}
+.live-matlab.req { color: #ff8a80; text-shadow: 0 0 24px rgba(231,76,60,0.25); }
+.live-matlab.opt { color: #c8c8c8; }
+
+.live-vote {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.05rem, 3.2vw, 1.38rem);
+  font-weight: 700;
+  color: var(--gold);
+  margin-top: 0.55rem; line-height: 1.35;
+}
+
+.live-tap-hint {
+  font-size: clamp(0.95rem, 2.6vw, 1.12rem);
+  color: #b0b0b0;
+  margin-top: 0.75rem; line-height: 1.45; font-weight: 500;
+}
 
 /* No live */
 .no-live {
@@ -86,23 +143,13 @@ body {
   padding:2rem; text-align:center; color:var(--muted);
 }
 .no-live .icon { font-size:2rem; margin-bottom:0.6rem; opacity:0.3; display:block; }
-.no-live p { font-size:0.85rem; line-height:1.6; }
-
-/* Past list */
-.past-list { display:flex; flex-direction:column; gap:0.4rem; }
-.past-item {
-  display:flex; align-items:center; gap:0.8rem;
-  background:var(--card); border:1px solid var(--border);
-  border-radius:10px; padding:0.7rem 1rem; opacity:0.4;
-}
-.past-dot { width:7px; height:7px; background:var(--muted); border-radius:50%; flex-shrink:0; }
-.past-name { font-family:'DM Mono',monospace; font-size:0.8rem; color:var(--muted); flex:1; }
-.past-time { font-family:'DM Mono',monospace; font-size:0.7rem; color:#333; }
-.no-past   { font-size:0.8rem; color:#2a2a2a; text-align:center; padding:0.5rem; }
+.no-live p { font-size: clamp(0.95rem, 2.5vw, 1.1rem); line-height: 1.65; }
 
 .rules-link {
-  display:block; text-align:center; font-size:0.78rem;
-  color:var(--muted); text-decoration:none; margin-top:1rem; transition:color 0.2s;
+  display:block; text-align:center; font-size: clamp(1rem, 2.8vw, 1.15rem);
+  font-weight: 600; color: var(--gold); text-decoration: none; margin-top: 1.25rem;
+  padding: 0.65rem 1rem; border: 1px solid rgba(245,200,66,0.35); border-radius: 12px;
+  background: rgba(245,200,66,0.06); transition: color 0.2s, border-color 0.2s;
 }
 .rules-link:hover { color:var(--gold); }
 .refresh-note { text-align:center; margin-top:1.2rem; font-size:0.68rem; color:#252525; font-family:'DM Mono',monospace; }
@@ -113,25 +160,24 @@ body {
 
   <div class="hero">
     <div class="ee98-tag">🏁 EE98</div>
-    <h1><span class="ee">EE</span>98 — Race to the <span class="board">Board</span> Tournament</h1>
+    <p class="hero-welcome">Welcome</p>
+    <p class="hero-subtitle"><span class="ee">EE</span>98 — Race to the <span class="board">Board</span></p>
+    <div class="hero-contest-row">
+      <span class="hero-flag" aria-hidden="true">🏁</span>
+      <span class="hero-contest">Contest</span>
+      <span class="hero-flag" aria-hidden="true">🏁</span>
+    </div>
     <p class="tagline">(Here We Learn By Doing!)</p>
   </div>
 
   <div id="live-section">
     <div class="section-label">🟢 Live now</div>
     <div id="live-container">
-      <div class="no-live"><span class="icon">⏳</span><p>No race is live right now.<br>Your instructor will activate the next session.</p></div>
+      <div class="no-live"><span class="icon">⏳</span><p>No race is live right now.<br><strong>Your instructor will press “Activate on portal” on the leaderboard when it is time.</strong></p></div>
     </div>
   </div>
 
-  <div id="past-section">
-    <div class="section-label">Past sessions</div>
-    <div class="past-list" id="past-list">
-      <div class="no-past">No past sessions yet.</div>
-    </div>
-  </div>
-
-  <a href="rules.html" class="rules-link">📋 Race rules &amp; eligibility</a>
+  <a href="rules.html" class="rules-link">📋 Race rules &amp; eligibility — read before you join</a>
   <p class="refresh-note">Updates automatically · bookmark this URL for the whole semester</p>
 
 </div>
@@ -165,77 +211,67 @@ body {
     }
   };
 
-  function fmtDate(ts) {
-    return new Date(ts).toLocaleDateString('en-US',
-      { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit', hour12:false });
-  }
-
   onValue(ref(db, 'portal'), snap => {
     const data          = snap.exists() ? snap.val() : {};
     const liveSession   = data.live         || null;
     const liveSettings  = data.liveSettings || {};
-    const pastSessions  = data.past ? Object.values(data.past) : [];
+    const voteMin       = liveSettings.voteMinutes != null ? Number(liveSettings.voteMinutes) : 5;
 
     // Live section
     const liveContainer = document.getElementById('live-container');
     if (liveSession) {
       const base = window.location.href.replace('portal.html','').replace(/\?.*$/,'');
       const url  = base + 'winner.html?session=' + encodeURIComponent(liveSession);
-      const matlabText = liveSettings.matlabRequired ? '· MATLAB required' : '· MATLAB optional';
+      const matlabReq = !!liveSettings.matlabRequired;
+      const matlabClass = matlabReq ? 'req' : 'opt';
+      const matlabLine  = matlabReq
+        ? 'MATLAB solution is required for this session.'
+        : 'MATLAB solution is optional for this session.';
       liveContainer.innerHTML = `
         <a href="${url}" class="live-btn">
           <div class="dot-wrap"><div class="live-dot"></div></div>
-          <div style="flex:1">
-            <div class="btn-label">● Race is live — tap to join now</div>
+          <div style="flex:1; min-width:0;">
+            <div class="btn-label">Race is live — tap to join now</div>
             <div class="btn-name">📋 Session: <span style="color:var(--gold)">${liveSession}</span></div>
-            <div class="btn-sub" style="margin-top:0.3rem;">${matlabText} &nbsp;·&nbsp; Tap → to enter your racing name &amp; solution</div>
+            <div class="live-matlab ${matlabClass}">${matlabLine}</div>
+            <div class="live-vote">Helpfulness vote: ${voteMin} minutes (after the winner presents)</div>
+            <div class="live-tap-hint">Tap here to enter your racing name and paste MATLAB <strong>before</strong> you submit.</div>
           </div>
           <div class="btn-arrow">→</div>
         </a>
-        <p style="text-align:center; font-size:0.72rem; color:var(--muted); margin-top:0.6rem; font-family:'DM Mono',monospace;">
-          → winner.html?session=${liveSession}
+        <p style="text-align:center; font-size:clamp(0.78rem,2vw,0.9rem); color:var(--muted); margin-top:0.75rem; font-family:'DM Mono',monospace;">
+          winner.html?session=${liveSession}
         </p>`;
     } else {
       liveContainer.innerHTML = `
         <div class="no-live">
           <span class="icon">⏳</span>
-          <p>No race is live right now.<br>Your instructor will activate the next session.</p>
+          <p>No race is live right now.<br><strong>Your instructor will press “Activate on portal” on the leaderboard when it is time.</strong></p>
         </div>`;
-    }
-
-    // Past sessions
-    const pastList = document.getElementById('past-list');
-    const sorted   = pastSessions.sort((a,b) => (b.archivedAt||0) - (a.archivedAt||0));
-    if (sorted.length === 0) {
-      pastList.innerHTML = '<div class="no-past">No past sessions yet.</div>';
-    } else {
-      pastList.innerHTML = sorted.map(s => `
-        <div class="past-item">
-          <div class="past-dot"></div>
-          <div class="past-name">${s.name}</div>
-          <div class="past-time">${s.archivedAt ? fmtDate(s.archivedAt) : '—'}</div>
-        </div>`).join('');
     }
   });
   // Auto-refresh every 30s as cache fallback
   setTimeout(() => window.location.reload(), 30000);
 
-  // Hidden instructor override: triple-click EE98 title to clear live session
+  // Hidden instructor override: triple-click tagline to clear live session
   let clickCount = 0, clickTimer;
-  document.querySelector('.hero h1').addEventListener('click', async () => {
-    clickCount++;
-    clearTimeout(clickTimer);
-    clickTimer = setTimeout(() => clickCount = 0, 800);
-    if (clickCount >= 3) {
-      clickCount = 0;
-      const pwd = prompt('Instructor code:');
-      if (pwd === 'rejeb98') {
-        await window._clearLive();
-        alert('Live session cleared.');
+  const taglineEl = document.querySelector('.hero .tagline');
+  if (taglineEl) {
+    taglineEl.addEventListener('click', async () => {
+      clickCount++;
+      clearTimeout(clickTimer);
+      clickTimer = setTimeout(() => clickCount = 0, 800);
+      if (clickCount >= 3) {
+        clickCount = 0;
+        const pwd = prompt('Instructor code:');
+        if (pwd === 'rejeb98') {
+          await window._clearLive();
+          alert('Live session cleared.');
+        }
       }
-    }
-  });
-  document.querySelector('.hero h1').style.cursor = 'default';
+    });
+    taglineEl.style.cursor = 'default';
+  }
 </script>
 </body>
 </html>

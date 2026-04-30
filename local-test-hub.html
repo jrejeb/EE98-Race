@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EE98 — Local testing hub</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: system-ui, sans-serif;
+    background: #0a0a0a; color: #eee;
+    max-width: 640px; margin: 2rem auto; padding: 0 1.2rem;
+    line-height: 1.55; font-size: 1.05rem;
+  }
+  h1 { font-size: 1.35rem; margin-bottom: 0.5rem; }
+  .note { color: #888; font-size: 0.95rem; margin-bottom: 1.5rem; }
+  .card {
+    display: block; margin-bottom: 0.75rem; padding: 1rem 1.2rem;
+    background: #161616; border: 1px solid #333; border-radius: 10px;
+    color: #F5C842; text-decoration: none; font-weight: 600;
+  }
+  .card:hover { border-color: #555; }
+  .card small { display: block; color: #888; font-weight: 400; margin-top: 0.35rem; font-size: 0.88rem; }
+  .card.student { border-color: rgba(91,164,245,0.4); color: #8ec7ff; }
+  h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin: 1.5rem 0 0.6rem; }
+  pre {
+    background: #111; border: 1px solid #2a2a2a; padding: 0.75rem 1rem;
+    border-radius: 8px; font-size: 0.82rem; overflow-x: auto; color: #aaa;
+  }
+</style>
+</head>
+<body>
+  <h1>EE98 — local testing</h1>
+  <p class="note">
+    Open this file from your <strong>file manager</strong> (like your EE98-Race folder), not Cursor’s side preview.
+    Use two real browsers: e.g. Chromium/Chrome for the instructor screen and <strong>Firefox</strong> for the student
+    (right-click <code>winner.html</code> → Open with → Firefox).
+  </p>
+
+  <a class="card" href="leaderboard.html">Instructor — leaderboard</a>
+  <a class="card" href="portal.html">Class portal (optional check)</a>
+  <a class="card student" href="winner.html">Student — winner (open in Firefox)</a>
+
+  <h2>If pages act blank or Firebase errors</h2>
+  <p class="note">Some setups need HTTP instead of <code>file://</code>. In a terminal in this folder run:</p>
+  <pre>python3 -m http.server 8765 --bind 127.0.0.1</pre>
+  <p class="note">Then use: <code>http://127.0.0.1:8765/leaderboard.html</code> (and same host for portal / winner).</p>
+</body>
+</html>

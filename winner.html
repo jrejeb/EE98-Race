@@ -33,29 +33,121 @@ body {
 
 .card {
   background: var(--card); border: 1px solid var(--border);
-  border-radius: 20px; padding: 2.5rem 2.2rem;
-  width: 100%; max-width: 520px;
+  border-radius: 20px; padding: 2.2rem 2rem 2.5rem;
+  width: 100%; max-width: 640px;
 }
 
-.ee98-tag {
-  display: inline-flex; align-items: center; gap: 0.4rem;
-  background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.25);
-  color: var(--gold); font-family: 'DM Mono', monospace;
-  font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
-  padding: 0.3rem 0.9rem; border-radius: 100px; margin-bottom: 1.3rem;
+.student-hero {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.student-welcome {
+  font-family: 'DM Sans', sans-serif; font-size: clamp(1.05rem, 2.8vw, 1.25rem);
+  font-weight: 600; font-style: italic; color: var(--blue); margin-bottom: 0.35rem;
+}
+.student-race-title {
+  font-family: 'Syne', sans-serif; font-size: clamp(1.35rem, 4vw, 1.85rem);
+  font-weight: 900; color: #fff; margin-bottom: 0.25rem;
+}
+.student-contest-row {
+  display: flex; align-items: center; justify-content: center; gap: 0.45rem;
+  flex-wrap: wrap; margin: 0.45rem 0 0.35rem;
+}
+.student-flag { font-size: clamp(1.5rem, 4vw, 2rem); line-height: 1; }
+.student-contest {
+  font-family: 'Syne', sans-serif; font-size: clamp(1.55rem, 5vw, 2.1rem);
+  font-weight: 900; font-style: italic; color: var(--gold);
+}
+.student-tagline {
+  font-family: 'Syne', sans-serif; font-size: clamp(1.1rem, 3vw, 1.45rem);
+  font-weight: 700; font-style: italic; color: var(--green);
+  margin-top: 0.35rem; line-height: 1.35;
 }
 
-h1 {
-  font-family: 'Syne', sans-serif; font-size: 1.9rem;
-  font-weight: 800; color: #fff; margin-bottom: 0.4rem;
+.session-readout {
+  border: 2px solid rgba(245,200,66,0.35);
+  border-radius: 16px;
+  padding: 1.25rem 1.15rem 1.35rem;
+  margin-bottom: 1.35rem;
+  background: rgba(245,200,66,0.06);
+  text-align: center;
+}
+.session-readout__label {
+  font-size: clamp(0.78rem, 2vw, 0.9rem); text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--muted); margin-bottom: 0.5rem; font-weight: 600;
+}
+.session-readout__name {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.65rem, 5vw, 2.35rem);
+  font-weight: 900; color: var(--gold); word-break: break-word; line-height: 1.15;
+  margin-bottom: 0.65rem;
+}
+.session-readout__matlab {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.12rem, 3.2vw, 1.48rem);
+  font-weight: 800; line-height: 1.4; margin-bottom: 0.55rem;
+}
+.session-readout__matlab.req { color: #ff8a80; }
+.session-readout__matlab.opt { color: #b8b8b8; }
+.session-readout__vote {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1rem, 2.8vw, 1.25rem);
+  font-weight: 700; color: var(--gold); line-height: 1.4;
 }
 
-.subtitle { color: var(--muted); font-size: 0.85rem; line-height: 1.6; margin-bottom: 1.8rem; }
+.rules-mega {
+  display: block; text-align: center;
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.05rem, 2.8vw, 1.22rem);
+  font-weight: 800;
+  color: var(--gold);
+  text-decoration: none;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 14px;
+  border: 2px solid rgba(245,200,66,0.45);
+  background: rgba(245,200,66,0.1);
+  line-height: 1.35;
+  transition: background 0.2s, transform 0.1s;
+}
+.rules-mega:hover { background: rgba(245,200,66,0.18); color: #fff; }
+.rules-mega:active { transform: scale(0.99); }
+
+.race-ended-panel {
+  display: none;
+  text-align: center;
+  padding: 1.5rem 1.25rem 1.75rem;
+  margin-bottom: 1rem;
+  border-radius: 16px;
+  border: 2px solid rgba(245,200,66,0.45);
+  background: rgba(245,200,66,0.1);
+}
+.race-ended-panel.is-visible { display: block; }
+.race-ended-panel__title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.35rem, 4vw, 1.85rem);
+  font-weight: 900;
+  color: var(--gold);
+  margin-bottom: 0.75rem;
+}
+.race-ended-panel__msg {
+  font-size: clamp(1.05rem, 2.8vw, 1.25rem);
+  line-height: 1.55;
+  color: #ddd;
+  font-weight: 500;
+}
+
+.form-heading {
+  font-family: 'Syne', sans-serif; font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+  font-weight: 800; color: #fff; margin-bottom: 0.5rem;
+}
+
+.subtitle { color: var(--muted); font-size: clamp(0.88rem, 2.2vw, 1rem); line-height: 1.65; margin-bottom: 1.5rem; }
 .subtitle strong { color: var(--text); }
 
 .field-label {
-  font-size: 0.7rem; color: var(--muted); text-transform: uppercase;
-  letter-spacing: 0.1em; margin-bottom: 0.4rem;
+  font-size: clamp(0.78rem, 2vw, 0.88rem); color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.1em; margin-bottom: 0.45rem; font-weight: 600;
 }
 
 input[type="text"], textarea {
@@ -78,7 +170,7 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
   margin-bottom: 0.4rem;
 }
 .matlab-req-badge {
-  font-size: 0.68rem; font-weight: 500; padding: 0.15rem 0.6rem;
+  font-size: 0.82rem; font-weight: 700; padding: 0.22rem 0.65rem;
   border-radius: 100px;
 }
 .matlab-req-badge.required { background: rgba(231,76,60,0.15); color: var(--red); border: 1px solid rgba(231,76,60,0.3); }
@@ -163,8 +255,8 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
 .divider { border: none; border-top: 1px solid var(--border); margin: 1.2rem 0; }
 
 .rules-link {
-  display: block; text-align: center; margin-top: 1.5rem;
-  font-size: 0.78rem; color: var(--muted); text-decoration: none;
+  display: block; text-align: center; margin-top: 1.25rem;
+  font-size: clamp(0.85rem, 2vw, 0.95rem); color: var(--muted); text-decoration: none;
   transition: color 0.2s;
 }
 .rules-link:hover { color: var(--gold); }
@@ -174,15 +266,41 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
 
 <!-- ══════════════════ FORM STATE ══════════════════ -->
 <div class="card" id="state-form">
-  <div class="ee98-tag">🏁 EE98 — Race to the Board</div>
   <div id="no-session-warn" style="display:none; margin-bottom:1rem;
     background:rgba(231,76,60,0.1); border:1px solid rgba(231,76,60,0.3);
-    border-radius:10px; padding:0.7rem 1rem; font-size:0.8rem;
+    border-radius:10px; padding:0.85rem 1rem; font-size:clamp(0.9rem,2.2vw,1rem);
     color:#e74c3c; line-height:1.5; text-align:center;">
     ⚠️ No session in your link!<br>
-    <span style="color:var(--muted);">Use the link shown on the classroom screen.</span>
+    <span style="color:var(--muted);">Use the link from the screen or open the class portal until the instructor activates the race.</span>
   </div>
-  <h1>Enter the race</h1>
+
+  <div id="race-ended-panel" class="race-ended-panel" role="status">
+    <p class="race-ended-panel__title">This session has ended</p>
+    <p class="race-ended-panel__msg">Sorry — keep up the good efforts! This session has ended.</p>
+  </div>
+
+  <div id="active-race-body">
+  <header class="student-hero">
+    <p class="student-welcome">Welcome</p>
+    <p class="student-race-title">Race to the Board</p>
+    <div class="student-contest-row">
+      <span class="student-flag" aria-hidden="true">🏁</span>
+      <span class="student-contest">Contest</span>
+      <span class="student-flag" aria-hidden="true">🏁</span>
+    </div>
+    <p class="student-tagline">(Here We Learn By Doing!)</p>
+  </header>
+
+  <div class="session-readout" id="session-readout">
+    <div class="session-readout__label">Session you are joining</div>
+    <div class="session-readout__name" id="session-readout-name">—</div>
+    <div class="session-readout__matlab opt" id="session-readout-matlab">Loading session settings…</div>
+    <div class="session-readout__vote" id="session-readout-vote"></div>
+  </div>
+
+  <a href="rules.html" class="rules-mega">📋 Race rules &amp; eligibility — read before you submit</a>
+
+  <h2 class="form-heading">Enter the race</h2>
   <p class="subtitle">
     🥇 <strong>First to finish → 10 pts</strong> &nbsp;·&nbsp; ✅ <strong>Everyone else → 5 pts</strong><br>
     Try on your own first — your MoM values are unique to you.
@@ -203,7 +321,8 @@ input::placeholder, textarea::placeholder { color: #3a3a3a; }
   </div>
 
   <button class="btn btn-gold" id="submit-btn" onclick="submitRace()">🏁 &nbsp; I finished — submit!</button>
-  <a href="rules.html" class="rules-link">📋 Review race rules</a>
+  <a href="rules.html" class="rules-link">📋 Open full rules page</a>
+  </div>
 </div>
 
 <!-- ══════════════════ WINNER STATE ══════════════════ -->
@@ -343,10 +462,37 @@ function playFanfare() {
   };
   // ───────────────────────────────────────────────────────────────
 
+  (async () => {
   const app = initializeApp(firebaseConfig);
   const db  = getDatabase(app);
   const params  = new URLSearchParams(window.location.search);
-  const session = params.get('session') || 'default';
+  const urlSession = params.get('session');
+  let session = urlSession;
+
+  if (!session) {
+    const liveSnap = await get(ref(db, 'portal/live'));
+    if (liveSnap.exists() && liveSnap.val()) {
+      session = String(liveSnap.val());
+      const u = new URL(window.location.href);
+      u.searchParams.set('session', session);
+      window.history.replaceState({}, '', u);
+    } else {
+      document.getElementById('no-session-warn').style.display = 'block';
+      session = 'default';
+    }
+  }
+
+  if (!urlSession) {
+    onValue(ref(db, 'portal/live'), snap => {
+      const live = snap.exists() && snap.val() ? String(snap.val()) : '';
+      if (live && live !== session) {
+        const u = new URL(window.location.href);
+        u.searchParams.set('session', live);
+        window.location.replace(u.toString());
+      }
+    });
+  }
+
   const subPath = `sessions/${session}/submissions`;
   const solPath = `sessions/${session}/solution`;
   const votePath= `sessions/${session}/votes`;
@@ -356,34 +502,44 @@ function playFanfare() {
   let myName    = null;
   let voteTimer = null;
   let matlabRequired = false;
+  let raceClosed   = false;
   window._matlabReq  = false;
+
+  function applyRaceEndedUI(ended) {
+    raceClosed = ended;
+    const panel = document.getElementById('race-ended-panel');
+    const body  = document.getElementById('active-race-body');
+    if (panel) {
+      panel.classList.toggle('is-visible', ended);
+    }
+    if (body) {
+      body.style.display = ended ? 'none' : 'block';
+    }
+    const btn = document.getElementById('submit-btn');
+    if (btn) {
+      btn.disabled = ended;
+      btn.textContent = ended ? 'Session ended' : '🏁 \u00a0 I finished — submit!';
+      btn.style.background = ended ? '#444' : '';
+      btn.style.color = ended ? '#888' : '';
+    }
+    ['rv-yes','rv-no','wv-yes','wv-no'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.disabled = ended; el.style.opacity = ended ? '0.35' : '1'; }
+    });
+  }
 
   // Load session settings (MATLAB required toggle)
   onValue(ref(db, setPath), snap => {
+    const voteMinDisplay = snap.exists() && snap.val().voteMinutes != null
+      ? snap.val().voteMinutes : 5;
     if (snap.exists()) {
       matlabRequired = !!snap.val().matlabRequired;
       window._matlabReq = matlabRequired;
-      // If race is stopped, lock submission and voting
+      // Race stopped — no more submissions or votes
       if (snap.val().stopped) {
-        const btn = document.getElementById('submit-btn');
-        if (btn && !btn.disabled) {
-          btn.disabled = true;
-          btn.textContent = '⏹ Race closed — submissions locked';
-          btn.style.background = '#444';
-          btn.style.color = '#888';
-        }
-        // Lock vote buttons
-        ['rv-yes','rv-no','wv-yes','wv-no'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) { el.disabled = true; el.style.opacity = '0.35'; }
-        });
-        // Show stopped notice
-        const errName = document.getElementById('err-name');
-        if (errName) {
-          errName.textContent = '⏹ The race has been closed by Professor Rejeb.';
-          errName.style.display = 'block';
-          errName.style.color = 'var(--muted)';
-        }
+        applyRaceEndedUI(true);
+      } else {
+        applyRaceEndedUI(false);
       }
     }
     const badge = document.getElementById('matlab-badge');
@@ -392,10 +548,22 @@ function playFanfare() {
     } else {
       badge.textContent = 'Optional'; badge.className = 'matlab-req-badge optional';
     }
-    // Also update session label in form subtitle
-    const sessDisplay = params.get('session') || 'default';
-    const subtitleEl = document.getElementById('form-session-lbl');
-    if (subtitleEl) subtitleEl.textContent = sessDisplay;
+    const readName = document.getElementById('session-readout-name');
+    const readMat = document.getElementById('session-readout-matlab');
+    const readVote = document.getElementById('session-readout-vote');
+    if (readName) readName.textContent = session;
+    if (readMat) {
+      if (matlabRequired) {
+        readMat.textContent = 'MATLAB is required — paste your work in the box below before you submit.';
+        readMat.className = 'session-readout__matlab req';
+      } else {
+        readMat.textContent = 'MATLAB is optional — you may still paste your work if you want.';
+        readMat.className = 'session-readout__matlab opt';
+      }
+    }
+    if (readVote) {
+      readVote.textContent = 'Helpfulness vote: ' + voteMinDisplay + ' min (after the winner presents at the board).';
+    }
   });
 
   // ── SUBMIT ──
@@ -405,6 +573,17 @@ function playFanfare() {
     const errName  = document.getElementById('err-name');
     const errMatlab= document.getElementById('err-matlab');
     const btn      = document.getElementById('submit-btn');
+
+    if (raceClosed) {
+      window.alert('Sorry — keep up the good efforts! This session has ended.');
+      return;
+    }
+    const guardSnap = await get(ref(db, setPath));
+    if (guardSnap.exists() && guardSnap.val().stopped) {
+      applyRaceEndedUI(true);
+      window.alert('Sorry — keep up the good efforts! This session has ended.');
+      return;
+    }
 
     const name = nameEl.value.trim();
     const code = codeEl.value.trim();
@@ -568,11 +747,6 @@ function playFanfare() {
     }
   });
 
-  // Warn if no session param in URL
-  if (!params.get('session')) {
-    document.getElementById('no-session-warn').style.display = 'block';
-  }
-
   // Auto-fill if student clicked a suggestion on the rules page
   const saved = sessionStorage.getItem('ee98_racename');
   if (saved) {
@@ -580,6 +754,8 @@ function playFanfare() {
     inp.value = saved;
     inp.style.borderColor = 'var(--gold)';
   }
+
+  })();
 </script>
 </body>
 </html>
